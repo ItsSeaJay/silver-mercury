@@ -9,7 +9,7 @@ var game = {
     node: document.createElement("canvas"),
     width: 360,
     height: 640,
-    context: 
+    context: this.node.getContext("2d")
   },
   start: function() {
     // Setup canvas
@@ -23,6 +23,6 @@ var game = {
     this.update();
   },
   update: function() {
-    // TODO:
+    // TODO: make core game loop
   }
 };
