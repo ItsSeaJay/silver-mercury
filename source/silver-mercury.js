@@ -3,46 +3,74 @@ document.body.onload = function () {
   game.start();
 }
 
-var x = 0;
-
 var game = {
   node: document.getElementById("silver-mercury"),
-  canvas: {
-    node: document.createElement("canvas"),
-    width: 360,
-    height: 640,
-    get context () {
-      return this.node.getContext("2d");
-    },
-    clear: function () {
-      this.context.clearRect(0, 0, this.width, this.height);
-    }
-  },
   start: function () {
-    this.node.parentNode.appendChild(this.canvas.node);
-    game.canvas.node.width = game.canvas.width;
-    game.canvas.node.height = game.canvas.height;
-    game.canvas.node.style.border = "1px solid gray";
+    this.node.parentNode.appendChild(canvas.node);
+    canvas.node.width = canvas.width;
+    canvas.node.height = canvas.height;
+    canvas.node.style.border = "1px solid gray";
 
     // Start game loop
     window.requestAnimationFrame(game.update);
     window.requestAnimationFrame(game.draw);
   },
   update: function () {
-    x++;
+    // handleInput
+    document.addEventListener("keypress", function (event) {
+      if (event.defaultPrevented) {
+        return;
+      }
 
-    if (x > game.canvas.width) {
-      x = -64;
-    }
+      switch (event.key) {
+        case "ArrowUp":
+          player.y -= player.speed;
+          break;
+        case "ArrowDown":
+          player.y += player.speed;
+          break;
+        case "ArrowLeft":
+          player.x -= player.speed;
+          break;
+        case "ArrowRight":
+          player.x += player.speed;
+          break;
+        default:
+          return;
+      }
+
+      event.preventDefault();
+    },
+    true);
 
     window.requestAnimationFrame(game.update);
   },
   draw: function () {
-    game.canvas.clear();
+    canvas.clear();
 
-    game.canvas.context.font = "16px Georgia";
-    game.canvas.context.strokeText("Hello World", x, game.canvas.width / 2);
+    canvas.context.fillStyle = "#000000";
+    canvas.context.fillRect(player.x, player.y, player.width, player.height);
 
     window.requestAnimationFrame(game.draw);
   }
+};
+
+var canvas = {
+  node: document.createElement("canvas"),
+  width: 360,
+  height: 640,
+  get context () {
+    return this.node.getContext("2d");
+  },
+  clear: function () {
+    this.context.clearRect(0, 0, this.width, this.height);
+  }
+}
+
+var player = {
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  width: 32,
+  height: 32,
+  speed: 4
 };
