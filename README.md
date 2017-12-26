@@ -1,2 +1,2 @@
-# silver-mercury
+# Silver Mercury
 A sidescrolling shooter written in Javascript.
