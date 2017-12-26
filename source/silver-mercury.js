@@ -24,20 +24,24 @@ var game = {
     game.canvas.node.height = game.canvas.height;
     game.canvas.node.style.border = "1px solid gray";
 
+    // Start game loop
     window.requestAnimationFrame(game.update);
     window.requestAnimationFrame(game.draw);
   },
   update: function () {
     x++;
 
+    if (x > game.canvas.width) {
+      x = -64;
+    }
+
     window.requestAnimationFrame(game.update);
   },
   draw: function () {
     game.canvas.clear();
 
-    game.canvas.context.moveTo(x, 0);
-    game.canvas.context.lineTo(200, 100);
-    game.canvas.context.stroke();
+    game.canvas.context.font = "16px Georgia";
+    game.canvas.context.strokeText("Hello World", x, game.canvas.width / 2);
 
     window.requestAnimationFrame(game.draw);
   }
