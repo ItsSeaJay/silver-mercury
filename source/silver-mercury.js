@@ -76,7 +76,11 @@ var player = {
   },
   width: 32,
   height: 32,
-  speed: 3,
+  speed: {
+    normal: 4,
+    attack: 2,
+    current: 4
+  },
   velocity: {
     x: 0,
     y: 0
@@ -88,18 +92,18 @@ var player = {
     // Movement
     // Vertical
     if (input.keyboard["ArrowUp"] || input.keyboard["w"]) {
-      player.velocity.y = -player.speed;
+      player.velocity.y = -player.speed.current;
     } else if (input.keyboard["ArrowDown"] || input.keyboard["s"]) {
-      player.velocity.y = player.speed;
+      player.velocity.y = player.speed.current;
     } else {
       player.velocity.y = 0;
     }
 
     // Horizontal
     if (input.keyboard["ArrowLeft"] || input.keyboard["a"]) {
-      player.velocity.x = -player.speed;
+      player.velocity.x = -player.speed.current;
     } else if (input.keyboard["ArrowRight"] || input.keyboard["d"]) {
-      player.velocity.x = player.speed;
+      player.velocity.x = player.speed.current;
     } else {
       player.velocity.x = 0;
     }
@@ -125,8 +129,8 @@ var player = {
     if (input.keyboard[" "] && player.cooldown == 0) {
       var bullet = {
         position: {
-          x: player.position.x,
-          y: player.position.y,
+          x: player.position.x + 8,
+          y: player.position.y + 16,
         },
         width: 16,
         height: 16,
@@ -146,8 +150,13 @@ var player = {
     for (bullet of player.bullets) {
       bullet.position.x += bullet.velocity.x;
       bullet.position.y += bullet.velocity.y;
+    }
 
-
+    // Braking
+    if (input.keyboard[" "]) {
+      player.speed.current = player.speed.attack;
+    } else {
+      player.speed.current = player.speed.normal;
     }
   },
   draw: function () {
@@ -160,7 +169,6 @@ var player = {
     );
 
     for (bullet of player.bullets) {
-      canvas.context.fillStyle = "#FF0000";
       canvas.context.fillRect(
         bullet.position.x,
         bullet.position.y,
