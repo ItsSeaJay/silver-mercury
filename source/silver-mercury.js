@@ -16,32 +16,11 @@ var game = {
     window.requestAnimationFrame(game.draw);
   },
   update: function () {
-    // handleInput
-    document.addEventListener("keypress", function (event) {
-      if (event.defaultPrevented) {
-        return;
-      }
+    input.handle();
 
-      switch (event.key) {
-        case "ArrowUp":
-          player.y -= player.speed;
-          break;
-        case "ArrowDown":
-          player.y += player.speed;
-          break;
-        case "ArrowLeft":
-          player.x -= player.speed;
-          break;
-        case "ArrowRight":
-          player.x += player.speed;
-          break;
-        default:
-          return;
-      }
-
-      event.preventDefault();
-    },
-    true);
+    if (input.keyboard["ArrowLeft"]) {
+      console.log("held");
+    }
 
     window.requestAnimationFrame(game.update);
   },
@@ -65,6 +44,28 @@ var canvas = {
   clear: function () {
     this.context.clearRect(0, 0, this.width, this.height);
   }
+}
+
+var input = {
+  keyboard: [],
+  handle: function () {
+    document.addEventListener('keydown', function(event) {
+        input.keyboard[event.key] = true;
+        event.preventDefault();
+    });
+
+    document.addEventListener('keyup', function(event) {
+        input.keyboard[event.key] = false;
+        event.preventDefault();
+    });
+  }
+};
+
+var keyboard = {
+  left: 37,
+  up: 38,
+  right: 39,
+  down: 40
 }
 
 var player = {
