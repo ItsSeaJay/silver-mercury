@@ -11,16 +11,13 @@ var game = {
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
 
-    // Start game loop
     window.requestAnimationFrame(game.update);
     window.requestAnimationFrame(game.draw);
   },
   update: function () {
     input.handle();
 
-    if (input.keyboard["ArrowLeft"]) {
-      console.log("held");
-    }
+    player.update();
 
     window.requestAnimationFrame(game.update);
   },
@@ -28,7 +25,7 @@ var game = {
     canvas.clear();
 
     canvas.context.fillStyle = "#000000";
-    canvas.context.fillRect(player.x, player.y, player.width, player.height);
+    canvas.context.fillRect(player.position.x, player.position.y, player.width, player.height);
 
     window.requestAnimationFrame(game.draw);
   }
@@ -51,27 +48,47 @@ var input = {
   handle: function () {
     document.addEventListener('keydown', function(event) {
         input.keyboard[event.key] = true;
-        event.preventDefault();
     });
 
     document.addEventListener('keyup', function(event) {
         input.keyboard[event.key] = false;
-        event.preventDefault();
     });
   }
 };
 
-var keyboard = {
-  left: 37,
-  up: 38,
-  right: 39,
-  down: 40
-}
-
 var player = {
-  x: canvas.width / 2,
-  y: canvas.height / 2,
+  position: {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+  },
   width: 32,
   height: 32,
-  speed: 4
+  speed: 4,
+  velocity: {
+    x: 0,
+    y: 0
+  },
+  update: function () {
+    // Movement
+    // Vertical
+    if (input.keyboard["ArrowUp"]) {
+      player.velocity.y = -player.speed;
+    } else if (input.keyboard["ArrowDown"]) {
+      player.velocity.y = player.speed;
+    } else {
+      player.velocity.y = 0;
+    }
+
+    // Horizontal
+    if (input.keyboard["ArrowLeft"]) {
+      player.velocity.x = -player.speed;
+    } else if (input.keyboard["ArrowRight"]) {
+      player.velocity.x = player.speed;
+    } else {
+      player.velocity.x = 0;
+    }
+
+    player.position.x += player.velocity.x;
+    player.position.y += player.velocity.y;
+  }
 };
