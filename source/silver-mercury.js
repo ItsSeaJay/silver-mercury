@@ -24,8 +24,7 @@ var game = {
   draw: function () {
     canvas.clear();
 
-    canvas.context.fillStyle = "#000000";
-    canvas.context.fillRect(player.position.x, player.position.y, player.width, player.height);
+    player.draw();
 
     window.requestAnimationFrame(game.draw);
   }
@@ -49,13 +48,17 @@ var input = {
     document.addEventListener('keydown', function(event) {
         input.keyboard[event.key] = true;
 
-        event.preventDefault();
+        if (event.key != "r" && event.key != "F5") {
+          event.preventDefault();
+        }
     });
 
     document.addEventListener('keyup', function(event) {
         input.keyboard[event.key] = false;
 
-        event.preventDefault();
+        if (event.key != "r" && event.key != "F5") {
+          event.preventDefault();
+        }
     });
   }
 };
@@ -78,6 +81,9 @@ var player = {
     x: 0,
     y: 0
   },
+  bullets: [],
+  reload: 8,
+  cooldown: 0,
   update: function () {
     // Movement
     // Vertical
@@ -101,6 +107,7 @@ var player = {
     player.position.x += player.velocity.x;
     player.position.y += player.velocity.y;
 
+    // Clamp position
     player.position.x = Maths.clamp(
       player.position.x,
       0,
@@ -111,5 +118,55 @@ var player = {
       0,
       canvas.height - player.height,
     );
+
+    // Shooting
+    player.cooldown = Math.max(player.cooldown - 1, 0);
+
+    if (input.keyboard[" "] && player.cooldown == 0) {
+      var bullet = {
+        position: {
+          x: player.position.x,
+          y: player.position.y,
+        },
+        width: 16,
+        height: 16,
+        velocity: {
+          x: 0,
+          y: -32
+        }
+      }
+
+      player.bullets.push(bullet);
+      console.log(player.bullets);
+
+      player.cooldown = player.reload;
+    }
+
+    // Bullets
+    for (bullet of player.bullets) {
+      bullet.position.x += bullet.velocity.x;
+      bullet.position.y += bullet.velocity.y;
+
+
+    }
+  },
+  draw: function () {
+    canvas.context.fillStyle = "#000000";
+    canvas.context.fillRect(
+      player.position.x,
+      player.position.y,
+      player.width,
+      player.height
+    );
+
+    for (bullet of player.bullets) {
+      canvas.context.fillStyle = "#FF0000";
+      canvas.context.fillRect(
+        bullet.position.x,
+        bullet.position.y,
+        bullet.width,
+        bullet.height
+      );
+    }
   }
 };
