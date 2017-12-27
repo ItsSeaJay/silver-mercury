@@ -11,12 +11,12 @@ var game = {
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
 
+    input.handle();
+
     window.requestAnimationFrame(game.update);
     window.requestAnimationFrame(game.draw);
   },
   update: function () {
-    input.handle();
-
     player.update();
 
     window.requestAnimationFrame(game.update);
@@ -48,11 +48,21 @@ var input = {
   handle: function () {
     document.addEventListener('keydown', function(event) {
         input.keyboard[event.key] = true;
+
+        event.preventDefault();
     });
 
     document.addEventListener('keyup', function(event) {
         input.keyboard[event.key] = false;
+
+        event.preventDefault();
     });
+  }
+};
+
+var Maths = {
+  clamp: function (value, minimum, maximum) {
+    return Math.max(minimum, Math.min(maximum, value));
   }
 };
 
@@ -63,7 +73,7 @@ var player = {
   },
   width: 32,
   height: 32,
-  speed: 4,
+  speed: 3,
   velocity: {
     x: 0,
     y: 0
@@ -71,18 +81,18 @@ var player = {
   update: function () {
     // Movement
     // Vertical
-    if (input.keyboard["ArrowUp"]) {
+    if (input.keyboard["ArrowUp"] || input.keyboard["w"]) {
       player.velocity.y = -player.speed;
-    } else if (input.keyboard["ArrowDown"]) {
+    } else if (input.keyboard["ArrowDown"] || input.keyboard["s"]) {
       player.velocity.y = player.speed;
     } else {
       player.velocity.y = 0;
     }
 
     // Horizontal
-    if (input.keyboard["ArrowLeft"]) {
+    if (input.keyboard["ArrowLeft"] || input.keyboard["a"]) {
       player.velocity.x = -player.speed;
-    } else if (input.keyboard["ArrowRight"]) {
+    } else if (input.keyboard["ArrowRight"] || input.keyboard["d"]) {
       player.velocity.x = player.speed;
     } else {
       player.velocity.x = 0;
@@ -90,5 +100,16 @@ var player = {
 
     player.position.x += player.velocity.x;
     player.position.y += player.velocity.y;
+
+    player.position.x = Maths.clamp(
+      player.position.x,
+      0,
+      canvas.width - player.width,
+    );
+    player.position.y = Maths.clamp(
+      player.position.y,
+      0,
+      canvas.height - player.height,
+    );
   }
 };
