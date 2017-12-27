@@ -135,7 +135,7 @@ var player = {
         width: 16,
         height: 16,
         velocity: {
-          x: 0,
+          x: Math.random() * 2 - 1,
           y: -32
         }
       }
