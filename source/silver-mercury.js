@@ -40,7 +40,12 @@ var canvas = {
   clear: function () {
     this.context.clearRect(0, 0, this.width, this.height);
   }
-}
+};
+
+var colours = {
+  red: "#AC3232",
+  black: "#000000"
+};
 
 var input = {
   keyboard: [],
@@ -88,6 +93,8 @@ var player = {
   bullets: [],
   reload: 8,
   cooldown: 0,
+  health: 100,
+  score: 0,
   update: function () {
     // Movement
     // Vertical
@@ -134,19 +141,20 @@ var player = {
         },
         width: 16,
         height: 16,
+        direction: 360,
         velocity: {
           x: Math.random() * 2 - 1,
           y: -32
         }
       }
 
+      // Shoot the bullet and reload
       player.bullets.push(bullet);
-      console.log(player.bullets);
-
       player.cooldown = player.reload;
     }
 
     // Bullets
+    // Here, the game iterates backwards as to not break the for loop
     for (var bullet = player.bullets.length - 1; bullet >= 0; bullet--) {
       // Movement
       player.bullets[bullet].position.x += player.bullets[bullet].velocity.x;
@@ -166,7 +174,21 @@ var player = {
     }
   },
   draw: function () {
-    canvas.context.fillStyle = "#000000";
+    // Health
+    var radius = (player.health / player.health) * canvas.height;
+    canvas.context.fillStyle = colours.red;
+    canvas.context.beginPath();
+    canvas.context.arc(
+      player.position.x + (player.width / 2),
+      player.position.y + (player.width / 2),
+      radius,
+      0,
+      2 * Math.PI // Circumfrence
+    );
+    canvas.context.fill();
+
+    // Ship
+    canvas.context.fillStyle = colours.black;
     canvas.context.fillRect(
       player.position.x,
       player.position.y,
@@ -174,6 +196,7 @@ var player = {
       player.height
     );
 
+    // Bullets
     for (bullet of player.bullets) {
       canvas.context.fillRect(
         bullet.position.x,
