@@ -48,7 +48,7 @@ var input = {
     document.addEventListener('keydown', function(event) {
         input.keyboard[event.key] = true;
 
-        if (event.key != "r" && event.key != "F5") {
+        if (event.key != "r" && event.key != "F5" && event.key != "F12") {
           event.preventDefault();
         }
     });
@@ -56,7 +56,7 @@ var input = {
     document.addEventListener('keyup', function(event) {
         input.keyboard[event.key] = false;
 
-        if (event.key != "r" && event.key != "F5") {
+        if (event.key != "r" && event.key != "F5" && event.key != "F12") {
           event.preventDefault();
         }
     });
@@ -147,9 +147,15 @@ var player = {
     }
 
     // Bullets
-    for (bullet of player.bullets) {
-      bullet.position.x += bullet.velocity.x;
-      bullet.position.y += bullet.velocity.y;
+    for (var bullet = player.bullets.length - 1; bullet >= 0; bullet--) {
+      // Movement
+      player.bullets[bullet].position.x += player.bullets[bullet].velocity.x;
+      player.bullets[bullet].position.y += player.bullets[bullet].velocity.y;
+
+      // Remove invisible bullets from the array
+      if (player.bullets[bullet].position.y < 0) {
+        player.bullets.splice(bullet, 1);
+      }
     }
 
     // Braking
