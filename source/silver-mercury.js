@@ -71,6 +71,15 @@ var input = {
 var Maths = {
   clamp: function (value, minimum, maximum) {
     return Math.max(minimum, Math.min(maximum, value));
+  },
+  degrees: function (radians) {
+    return radians * (180 / Math.PI);
+  },
+  radians: function (degrees) {
+    return degrees * (Math.PI / 180);
+  },
+  lerp: function (start, destination, speed) {
+    return start + speed * (destination - start);
   }
 };
 
@@ -93,7 +102,10 @@ var player = {
   bullets: [],
   reload: 8,
   cooldown: 0,
-  health: 100,
+  health: {
+    maximum: 100,
+    current: 100
+  },
   score: 0,
   update: function () {
     // Movement
@@ -141,11 +153,8 @@ var player = {
         },
         width: 16,
         height: 16,
-        direction: 360,
-        velocity: {
-          x: Math.random() * 2 - 1,
-          y: -32
-        }
+        direction: 180 + (Math.random() * 1 - 0.5), // In degrees, where 0 is straight down
+        velocity: 16
       }
 
       // Shoot the bullet and reload
@@ -157,8 +166,8 @@ var player = {
     // Here, the game iterates backwards as to not break the for loop
     for (var bullet = player.bullets.length - 1; bullet >= 0; bullet--) {
       // Movement
-      player.bullets[bullet].position.x += player.bullets[bullet].velocity.x;
-      player.bullets[bullet].position.y += player.bullets[bullet].velocity.y;
+      player.bullets[bullet].position.x += Math.sin(Maths.radians(player.bullets[bullet].direction)) * player.bullets[bullet].velocity;
+      player.bullets[bullet].position.y += Math.cos(Maths.radians(player.bullets[bullet].direction)) * player.bullets[bullet].velocity;
 
       // Remove invisible bullets from the array
       if (player.bullets[bullet].position.y < 0) {
@@ -169,13 +178,14 @@ var player = {
     // Braking
     if (input.keyboard[" "]) {
       player.speed.current = player.speed.attack;
+      player.health.current--;
     } else {
       player.speed.current = player.speed.normal;
     }
   },
   draw: function () {
     // Health
-    var radius = (player.health / player.health) * canvas.height;
+    var radius = (player.health.current / player.health.maximum) * canvas.height;
     canvas.context.fillStyle = colours.red;
     canvas.context.beginPath();
     canvas.context.arc(
