@@ -72,6 +72,12 @@ var Maths = {
   clamp: function (value, minimum, maximum) {
     return Math.max(minimum, Math.min(maximum, value));
   },
+  rotation: function (value) {
+    return {
+      x: Math.sin(Maths.radians(value)),
+      y: Math.cos(Maths.radians(value))
+    };
+  },
   degrees: function (radians) {
     return radians * (180 / Math.PI);
   },
@@ -166,8 +172,8 @@ var player = {
     // Here, the game iterates backwards as to not break the for loop
     for (var bullet = player.bullets.length - 1; bullet >= 0; bullet--) {
       // Movement
-      player.bullets[bullet].position.x += Math.sin(Maths.radians(player.bullets[bullet].direction)) * player.bullets[bullet].velocity;
-      player.bullets[bullet].position.y += Math.cos(Maths.radians(player.bullets[bullet].direction)) * player.bullets[bullet].velocity;
+      player.bullets[bullet].position.x += Maths.rotation(player.bullets[bullet].direction).x * player.bullets[bullet].velocity;
+      player.bullets[bullet].position.y += Maths.rotation(player.bullets[bullet].direction).y * player.bullets[bullet].velocity;
 
       // Remove invisible bullets from the array
       if (player.bullets[bullet].position.y < 0) {
@@ -178,7 +184,8 @@ var player = {
     // Braking
     if (input.keyboard[" "]) {
       player.speed.current = player.speed.attack;
-      player.health.current--;
+      player.health.current -= 0.2;
+      player.health.current = Maths.clamp(player.health.current, 0, player.health.maximum);
     } else {
       player.speed.current = player.speed.normal;
     }
