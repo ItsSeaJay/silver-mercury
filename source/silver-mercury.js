@@ -98,16 +98,19 @@ var player = {
   height: 32,
   speed: {
     normal: 4,
-    attack: 2,
+    attack: 3,
     current: 4
   },
   velocity: {
     x: 0,
     y: 0
   },
-  bullets: [],
-  reload: 8,
-  cooldown: 0,
+  gun: {
+    bullets: [],
+    barrels: 1, // How many shots are fired at once
+    reload: 8,
+    cooldown: 0,
+  },
   health: {
     maximum: 100,
     current: 100,
@@ -150,40 +153,43 @@ var player = {
     );
 
     // Shooting
-    player.cooldown = Math.max(player.cooldown - 1, 0);
+    player.gun.cooldown = Math.max(player.gun.cooldown - 1, 0);
 
-    if (input.keyboard[" "] && player.cooldown == 0) {
-      var bullet = {
-        position: {
-          x: player.position.x + 8,
-          y: player.position.y + 16,
-        },
-        width: 16,
-        height: 16,
-        direction: 180 + (Math.random() * 1 - 0.5), // In degrees, where 0 is straight down
-        velocity: 16
+    if (input.keyboard[" "] && player.gun.cooldown == 0) {
+      for (var barrel = 0; barrel < player.gun.barrels; barrel++) {
+        var bullet = {
+          position: {
+            x: player.position.x + 8,
+            y: player.position.y + 16,
+          },
+          width: 16,
+          height: 16,
+          // In degrees, where 0 is straight down
+          direction: 180 + (Math.random() * 1 - 0.5),
+          velocity: 16
+        }
+
+        // Shoot the bullet and player.gun.reload
+        player.gun.bullets.push(bullet);
+        player.gun.cooldown = player.gun.reload;
       }
-
-      // Shoot the bullet and reload
-      player.bullets.push(bullet);
-      player.cooldown = player.reload;
     }
 
     // Bullets
     // Here, the game iterates backwards as to not break the for loop
-    for (var bullet = player.bullets.length - 1; bullet >= 0; bullet--) {
+    for (var bullet = player.gun.bullets.length - 1; bullet >= 0; bullet--) {
       // Movement
       var velocity = {
-        x: Maths.rotation(player.bullets[bullet].direction).x * player.bullets[bullet].velocity,
-        y: Maths.rotation(player.bullets[bullet].direction).y * player.bullets[bullet].velocity
+        x: Maths.rotation(player.gun.bullets[bullet].direction).x * player.gun.bullets[bullet].velocity,
+        y: Maths.rotation(player.gun.bullets[bullet].direction).y * player.gun.bullets[bullet].velocity
       }
 
-      player.bullets[bullet].position.x += velocity.x;
-      player.bullets[bullet].position.y += velocity.y;
+      player.gun.bullets[bullet].position.x += velocity.x;
+      player.gun.bullets[bullet].position.y += velocity.y;
 
       // Remove invisible bullets from the array
-      if (player.bullets[bullet].position.y < 0) {
-        player.bullets.splice(bullet, 1);
+      if (player.gun.bullets[bullet].position.y < 0) {
+        player.gun.bullets.splice(bullet, 1);
       }
     }
 
@@ -228,7 +234,7 @@ var player = {
     );
 
     // Bullets
-    for (bullet of player.bullets) {
+    for (bullet of player.gun.bullets) {
       canvas.context.fillRect(
         bullet.position.x,
         bullet.position.y,
