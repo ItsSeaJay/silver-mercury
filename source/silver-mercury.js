@@ -113,8 +113,7 @@ var player = {
   },
   health: {
     maximum: 100,
-    current: 100,
-    regeneration: 0.5
+    current: 100
   },
   score: 0,
   update: function () {
@@ -201,16 +200,9 @@ var player = {
     } else {
       player.speed.current = player.speed.normal;
     }
-
-    // Health Regeneration
-    if (player.health.current < player.health.maximum) {
-      player.health.current = Math.min(
-        player.health.current + player.health.regeneration,
-        player.health.maximum
-      );
-    }
   },
   draw: function () {
+
     // Health
     var radius = (player.health.current / player.health.maximum) * canvas.height;
     canvas.context.fillStyle = colours.red;
