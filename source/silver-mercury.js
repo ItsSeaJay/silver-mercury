@@ -279,8 +279,8 @@ var player = {
     // Enemy Test
     // TODO: move to own objects
     canvas.context.fillRect(
-      player.position.x + (Math.sin(game.time.elapsed) * (canvas.width / 2)),
-      64,
+      (canvas.width / 2) + (Math.sin(game.time.elapsed * 4) * (canvas.width / 3)),
+      0,
       player.width,
       player.height
     );
