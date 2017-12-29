@@ -150,10 +150,13 @@ var player = {
   health: {
     maximum: 100,
     current: 100,
-    decay: 0.1
+    decay: 0
   },
   score: 0,
   update: function () {
+    // Score
+    player.score = new Date(game.time.elapsed).getTime('HH MM SS');
+
     // Movement
     // Vertical
     if (input.keyboard["ArrowUp"] || input.keyboard["w"]) {
@@ -244,6 +247,7 @@ var player = {
     player.health.current = Maths.clamp(player.health.current, 0, player.health.maximum);
   },
   draw: function () {
+    // Draw functions depth first
     // Health
     var radius = (player.health.current / player.health.maximum) * canvas.height;
     canvas.context.fillStyle = colours.red;
