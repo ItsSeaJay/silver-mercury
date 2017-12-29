@@ -11,6 +11,9 @@ var game = {
     playing: 1
   },
   state: 1,
+  time: { // Measured in frames
+    elapsed: 0
+  },
   start: function () {
     game.node.parentNode.appendChild(canvas.node);
     canvas.node.width = canvas.width;
@@ -24,6 +27,13 @@ var game = {
     window.requestAnimationFrame(game.draw);
   },
   update: function () {
+    if (game.time.elapsed < Maths.limit) {
+      game.time.elapsed++;
+    } else {
+      game.time.elapsed = 0;
+      alert("You waited four million years. Congratulations.");
+    }
+
     switch (game.state) {
       case game.states.paused:
 
@@ -94,6 +104,7 @@ var input = {
 };
 
 var Maths = {
+  limit: 9007199254740991, // Highest possible integer storable in Javascript
   clamp: function (value, minimum, maximum) {
     return Math.max(minimum, Math.min(maximum, value));
   },
@@ -265,16 +276,20 @@ var player = {
       );
     }
 
+    // Enemy Test
+    // TODO: move to own objects
+    canvas.context.fillRect(
+      32,
+      32,
+      player.width,
+      player.height
+    );
+
     // Score
     canvas.context.font = "32px 'Roboto', sans-serif";
     canvas.context.fillText(player.score, 32, canvas.height - 36);
   }
 };
-
-var enemies = {
-
-}
-
 
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
