@@ -11,7 +11,7 @@ var game = {
     playing: 1
   },
   state: 1,
-  time: { // Measured in frames
+  time: { // Measured in 1/60th second intervals
     elapsed: 0
   },
   start: function () {
@@ -28,7 +28,7 @@ var game = {
   },
   update: function () {
     if (game.time.elapsed < Maths.limit) {
-      game.time.elapsed++;
+      game.time.elapsed += 1 / 60;
     } else {
       game.time.elapsed = 0;
       alert("You waited four million years. Congratulations.");
@@ -279,8 +279,8 @@ var player = {
     // Enemy Test
     // TODO: move to own objects
     canvas.context.fillRect(
-      32,
-      32,
+      player.position.x + (Math.sin(game.time.elapsed) * (canvas.width / 2)),
+      64,
       player.width,
       player.height
     );
