@@ -30,10 +30,6 @@ var game = {
         break;
       case game.states.playing:
         player.update();
-
-        if (input.keydown("p")) {
-          game.state = game.states.paused;
-        }
         break;
     }
 
@@ -69,6 +65,7 @@ var colours = {
 var input = {
   keyboard: [],
   handle: function () {
+    // Key Down
     document.addEventListener('keydown', function(event) {
         input.keyboard[event.key] = true;
 
@@ -77,21 +74,21 @@ var input = {
         }
     });
 
+    // Key Press
+    document.addEventListener('keypress', function (event) {
+
+      if (event.key != "r" && event.key != "F5" && event.key != "F12") {
+        event.preventDefault();
+      }
+    });
+
+    // Key Up
     document.addEventListener('keyup', function(event) {
         input.keyboard[event.key] = false;
 
         if (event.key != "r" && event.key != "F5" && event.key != "F12") {
           event.preventDefault();
         }
-    });
-  },
-  keydown: function (key) {
-    document.addEventListener('keydown', function (event) {
-      if (event.key == key) {
-        return true;
-      } else {
-        return false;
-      }
     });
   }
 };
@@ -125,7 +122,7 @@ var player = {
   width: 32,
   height: 32,
   speed: {
-    normal: 4,
+    normal: 5,
     attack: 3,
     current: 4
   },
@@ -275,7 +272,38 @@ var player = {
 };
 
 var enemies = {
-  straight: {
-    
-  }
+
 }
+
+
+// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+// http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
+
+// requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
+
+// MIT license
+
+(function() {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());
