@@ -4,12 +4,19 @@ document.body.onload = function () {
 }
 
 var game = {
+  title: "Silver Mercury",
   node: document.getElementById("silver-mercury"),
+  states: {
+    paused: 0,
+    playing: 1
+  },
+  state: 1,
   start: function () {
-    this.node.parentNode.appendChild(canvas.node);
+    game.node.parentNode.appendChild(canvas.node);
     canvas.node.width = canvas.width;
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
+    canvas.node.style.backgroundColor = colours.white;
 
     input.handle();
 
@@ -17,7 +24,18 @@ var game = {
     window.requestAnimationFrame(game.draw);
   },
   update: function () {
-    player.update();
+    switch (game.state) {
+      case game.states.paused:
+
+        break;
+      case game.states.playing:
+        player.update();
+
+        if (input.keydown("p")) {
+          game.state = game.states.paused;
+        }
+        break;
+    }
 
     window.requestAnimationFrame(game.update);
   },
@@ -44,7 +62,8 @@ var canvas = {
 
 var colours = {
   red: "#AC3232",
-  black: "#000000"
+  black: "#000000",
+  white: "#FFFFFF"
 };
 
 var input = {
@@ -64,6 +83,15 @@ var input = {
         if (event.key != "r" && event.key != "F5" && event.key != "F12") {
           event.preventDefault();
         }
+    });
+  },
+  keydown: function (key) {
+    document.addEventListener('keydown', function (event) {
+      if (event.key == key) {
+        return true;
+      } else {
+        return false;
+      }
     });
   }
 };
@@ -108,12 +136,13 @@ var player = {
   gun: {
     bullets: [],
     barrels: 1, // How many shots are fired at once
-    reload: 8,
-    cooldown: 0,
+    reload: 8, // How many frames needed to reload
+    cooldown: 0
   },
   health: {
     maximum: 100,
-    current: 100
+    current: 100,
+    decay: 0.1
   },
   score: 0,
   update: function () {
@@ -195,14 +224,18 @@ var player = {
     // Braking
     if (input.keyboard[" "]) {
       player.speed.current = player.speed.attack;
-      player.health.current -= 1;
-      player.health.current = Maths.clamp(player.health.current, 0, player.health.maximum);
     } else {
       player.speed.current = player.speed.normal;
     }
+
+    // Health
+    // Decay
+    player.health.current -= player.health.decay;
+
+    // Clamp
+    player.health.current = Maths.clamp(player.health.current, 0, player.health.maximum);
   },
   draw: function () {
-
     // Health
     var radius = (player.health.current / player.health.maximum) * canvas.height;
     canvas.context.fillStyle = colours.red;
@@ -234,5 +267,15 @@ var player = {
         bullet.height
       );
     }
+
+    // Score
+    canvas.context.font = "32px 'Roboto', sans-serif";
+    canvas.context.fillText(player.score, 32, canvas.height - 36);
   }
 };
+
+var enemies = {
+  straight: {
+    
+  }
+}
