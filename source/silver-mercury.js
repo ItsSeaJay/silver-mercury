@@ -4,12 +4,19 @@ document.body.onload = function () {
 }
 
 var game = {
+  title: "Silver Mercury",
   node: document.getElementById("silver-mercury"),
+  states: {
+    paused: 0,
+    playing: 1
+  },
+  state: 1,
   start: function () {
-    this.node.parentNode.appendChild(canvas.node);
+    game.node.parentNode.appendChild(canvas.node);
     canvas.node.width = canvas.width;
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
+    canvas.node.style.backgroundColor = colours.white;
 
     input.handle();
 
@@ -17,7 +24,14 @@ var game = {
     window.requestAnimationFrame(game.draw);
   },
   update: function () {
-    player.update();
+    switch (game.state) {
+      case game.states.paused:
+
+        break;
+      case game.states.playing:
+        player.update();
+        break;
+    }
 
     window.requestAnimationFrame(game.update);
   },
@@ -40,11 +54,18 @@ var canvas = {
   clear: function () {
     this.context.clearRect(0, 0, this.width, this.height);
   }
-}
+};
+
+var colours = {
+  red: "#AC3232",
+  black: "#000000",
+  white: "#FFFFFF"
+};
 
 var input = {
   keyboard: [],
   handle: function () {
+    // Key Down
     document.addEventListener('keydown', function(event) {
         input.keyboard[event.key] = true;
 
@@ -53,6 +74,15 @@ var input = {
         }
     });
 
+    // Key Press
+    document.addEventListener('keypress', function (event) {
+
+      if (event.key != "r" && event.key != "F5" && event.key != "F12") {
+        event.preventDefault();
+      }
+    });
+
+    // Key Up
     document.addEventListener('keyup', function(event) {
         input.keyboard[event.key] = false;
 
@@ -66,6 +96,21 @@ var input = {
 var Maths = {
   clamp: function (value, minimum, maximum) {
     return Math.max(minimum, Math.min(maximum, value));
+  },
+  rotation: function (value) {
+    return {
+      x: Math.sin(Maths.radians(value)),
+      y: Math.cos(Maths.radians(value))
+    };
+  },
+  degrees: function (radians) {
+    return radians * (180 / Math.PI);
+  },
+  radians: function (degrees) {
+    return degrees * (Math.PI / 180);
+  },
+  lerp: function (start, destination, speed) {
+    return start + speed * (destination - start);
   }
 };
 
@@ -77,17 +122,26 @@ var player = {
   width: 32,
   height: 32,
   speed: {
-    normal: 4,
-    attack: 2,
+    normal: 5,
+    attack: 3,
     current: 4
   },
   velocity: {
     x: 0,
     y: 0
   },
-  bullets: [],
-  reload: 8,
-  cooldown: 0,
+  gun: {
+    bullets: [],
+    barrels: 1, // How many shots are fired at once
+    reload: 8, // How many frames needed to reload
+    cooldown: 0
+  },
+  health: {
+    maximum: 100,
+    current: 100,
+    decay: 0.1
+  },
+  score: 0,
   update: function () {
     // Movement
     // Vertical
@@ -124,37 +178,43 @@ var player = {
     );
 
     // Shooting
-    player.cooldown = Math.max(player.cooldown - 1, 0);
+    player.gun.cooldown = Math.max(player.gun.cooldown - 1, 0);
 
-    if (input.keyboard[" "] && player.cooldown == 0) {
-      var bullet = {
-        position: {
-          x: player.position.x + 8,
-          y: player.position.y + 16,
-        },
-        width: 16,
-        height: 16,
-        velocity: {
-          x: Math.random() * 2 - 1,
-          y: -32
+    if (input.keyboard[" "] && player.gun.cooldown == 0) {
+      for (var barrel = 0; barrel < player.gun.barrels; barrel++) {
+        var bullet = {
+          position: {
+            x: player.position.x + 8,
+            y: player.position.y + 16,
+          },
+          width: 16,
+          height: 16,
+          // In degrees, where 0 is straight down
+          direction: 180 + (Math.random() * 1 - 0.5),
+          velocity: 16
         }
+
+        // Shoot the bullet and player.gun.reload
+        player.gun.bullets.push(bullet);
+        player.gun.cooldown = player.gun.reload;
       }
-
-      player.bullets.push(bullet);
-      console.log(player.bullets);
-
-      player.cooldown = player.reload;
     }
 
     // Bullets
-    for (var bullet = player.bullets.length - 1; bullet >= 0; bullet--) {
+    // Here, the game iterates backwards as to not break the for loop
+    for (var bullet = player.gun.bullets.length - 1; bullet >= 0; bullet--) {
       // Movement
-      player.bullets[bullet].position.x += player.bullets[bullet].velocity.x;
-      player.bullets[bullet].position.y += player.bullets[bullet].velocity.y;
+      var velocity = {
+        x: Maths.rotation(player.gun.bullets[bullet].direction).x * player.gun.bullets[bullet].velocity,
+        y: Maths.rotation(player.gun.bullets[bullet].direction).y * player.gun.bullets[bullet].velocity
+      }
+
+      player.gun.bullets[bullet].position.x += velocity.x;
+      player.gun.bullets[bullet].position.y += velocity.y;
 
       // Remove invisible bullets from the array
-      if (player.bullets[bullet].position.y < 0) {
-        player.bullets.splice(bullet, 1);
+      if (player.gun.bullets[bullet].position.y < 0) {
+        player.gun.bullets.splice(bullet, 1);
       }
     }
 
@@ -164,9 +224,30 @@ var player = {
     } else {
       player.speed.current = player.speed.normal;
     }
+
+    // Health
+    // Decay
+    player.health.current -= player.health.decay;
+
+    // Clamp
+    player.health.current = Maths.clamp(player.health.current, 0, player.health.maximum);
   },
   draw: function () {
-    canvas.context.fillStyle = "#000000";
+    // Health
+    var radius = (player.health.current / player.health.maximum) * canvas.height;
+    canvas.context.fillStyle = colours.red;
+    canvas.context.beginPath();
+    canvas.context.arc(
+      player.position.x + (player.width / 2),
+      player.position.y + (player.width / 2),
+      radius,
+      0,
+      2 * Math.PI // Circumfrence
+    );
+    canvas.context.fill();
+
+    // Ship
+    canvas.context.fillStyle = colours.black;
     canvas.context.fillRect(
       player.position.x,
       player.position.y,
@@ -174,7 +255,8 @@ var player = {
       player.height
     );
 
-    for (bullet of player.bullets) {
+    // Bullets
+    for (bullet of player.gun.bullets) {
       canvas.context.fillRect(
         bullet.position.x,
         bullet.position.y,
@@ -182,5 +264,46 @@ var player = {
         bullet.height
       );
     }
+
+    // Score
+    canvas.context.font = "32px 'Roboto', sans-serif";
+    canvas.context.fillText(player.score, 32, canvas.height - 36);
   }
 };
+
+var enemies = {
+
+}
+
+
+// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+// http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
+
+// requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
+
+// MIT license
+
+(function() {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());
