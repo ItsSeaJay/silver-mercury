@@ -16,7 +16,7 @@ var game = {
     elapsed: 0
   },
   start: function () {
-    game.node.parentNode.appendChild(canvas.node);
+    game.node.parentNode.insertBefore(canvas.node, game.node);
     canvas.node.width = canvas.width;
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
@@ -296,14 +296,14 @@ var player = {
     // Collision Detection
     if (opponent.enemies.length > 0) {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
-        if (collision.check.rectangle(player, opponent.enemies[enemy], -player.width)) {
+        if (collision.check.rectangle(player, opponent.enemies[enemy], -player.width / 2)) {
           player.health.current--;
         }
       };
     }
 
     // Death
-    if (player.health.current == 0) {
+    if (player.health.current == 0 || player.health.current == player.health.maximum) {
       game.state = game.states.over;
     }
   },
@@ -369,9 +369,10 @@ var opponent = {
         opponent.enemies.push(opponent.enemy.asteroid);
       },
       update: function () {
-        opponent.enemy.asteroid.position.y++;
+        opponent.enemy.asteroid.position.y += 2;
 
         if (opponent.enemy.asteroid.position.y > canvas.height) {
+          opponent.enemy.asteroid.position.x = (Math.random() * canvas.width) - opponent.enemy.asteroid.width;
           opponent.enemy.asteroid.position.y = -opponent.enemy.asteroid.height;
         }
       },
