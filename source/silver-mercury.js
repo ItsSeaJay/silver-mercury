@@ -148,7 +148,7 @@ var player = {
     height: 32
   },
   radius: {
-    maximum: canvas.width * 2
+    maximum: canvas.width / 3
   },
   speed: {
     normal: 5,
@@ -168,8 +168,8 @@ var player = {
   health: {
     maximum: 100,
     current: 10,
-    decay: 4,
-    regeneration: 0.33
+    decay: 3,
+    regeneration: 0.1
   },
   score: 0,
   update: function () {
@@ -202,12 +202,12 @@ var player = {
     player.position.x = Maths.clamp(
       player.position.x,
       0,
-      canvas.width - player.hitbox.width,
+      canvas.width,
     );
     player.position.y = Maths.clamp(
       player.position.y,
       0,
-      canvas.height - player.height,
+      canvas.height,
     );
 
     // Shooting
@@ -271,9 +271,9 @@ var player = {
   draw: function () {
     // Draw functions depth first
     // Ship
-    var radius = (player.health.current / player.health.maximum) * (player.hitbox.width);
+    var radius = (player.health.current / player.health.maximum) * (player.radius.maximum);
 
-    canvas.context.fillStyle = colours.red;
+    canvas.context.fillStyle = colours.black;
     canvas.context.beginPath();
     canvas.context.arc(
       player.position.x + (player.hitbox.width / 2),
@@ -299,7 +299,7 @@ var player = {
     date.setSeconds(player.score);
     var seconds = date.toISOString().substr(11, 8);
 
-    canvas.context.fillStyle = colours.black;
+    canvas.context.fillStyle = colours.red;
     canvas.context.font = "32px 'Roboto', sans-serif";
     canvas.context.textAlign = "center";
     canvas.context.fillText(seconds, (canvas.width / 2), canvas.height - 32);
