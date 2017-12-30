@@ -345,17 +345,27 @@ var opponent = {
         y: -64
       },
       width: 64,
-      height: 64
+      height: 64,
+      update: function () {
+        opponent.enemy.asteroid.position.y++;
+
+        if (opponent.enemy.asteroid.position.y > canvas.height) {
+          opponent.enemy.asteroid.position.y = -opponent.enemy.asteroid.height;
+        }
+      },
+      draw: function () {
+
+      }
     }
   },
   start: function () {
-    opponent.enemies.push(opponent.enemy.asteroid);
+    var slop = opponent.enemies.push(opponent.enemy.asteroid);
   },
   update: function () {
     // Iterates backwards for easy removal from array
     if (opponent.enemies.length > 0) {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
-        opponent.enemies[enemy].position.y += 4;
+        opponent.enemies[enemy].update();
       };
     }
   },
@@ -372,6 +382,9 @@ var opponent = {
         );
       };
     }
+  },
+  spawn: function (enemy, x, y) {
+
   }
 };
 
