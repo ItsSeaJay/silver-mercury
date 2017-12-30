@@ -8,7 +8,8 @@ var game = {
   node: document.getElementById("silver-mercury"),
   states: {
     paused: 0,
-    playing: 1
+    playing: 1,
+    over: 2
   },
   state: 1,
   time: { // Measured in 1/60th second intervals
@@ -43,6 +44,9 @@ var game = {
         player.update();
         opponent.update();
         break;
+      case game.states.over:
+
+        break;
     }
 
     window.requestAnimationFrame(game.update);
@@ -57,6 +61,13 @@ var game = {
       case game.states.playing:
         player.draw();
         opponent.draw();
+        break;
+      case game.states.over:
+        canvas.context.fillStyle = canvas.colours.black;
+        canvas.context.font = "32px 'Roboto', sans-serif";
+        canvas.context.textAlign = "center";
+        canvas.context.fillText("Game Over", (canvas.width / 2), canvas.height / 2);
+        canvas.context.fillText("Please Refresh", (canvas.width / 2), canvas.height / 2 + 32);
         break;
     }
 
@@ -286,9 +297,14 @@ var player = {
     if (opponent.enemies.length > 0) {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
         if (collision.check.rectangle(player, opponent.enemies[enemy], -player.width)) {
-
+          player.health.current--;
         }
       };
+    }
+
+    // Death
+    if (player.health.current == 0) {
+      game.state = game.states.over;
     }
   },
   draw: function () {
