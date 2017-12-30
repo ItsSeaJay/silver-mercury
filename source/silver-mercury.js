@@ -27,6 +27,7 @@ var game = {
 
     window.requestAnimationFrame(game.update);
     window.requestAnimationFrame(game.draw);
+    window.requestAnimationFrame(game.teardown);
   },
   update: function () {
     if (game.time.elapsed < Maths.limit) {
@@ -73,6 +74,17 @@ var game = {
     }
 
     window.requestAnimationFrame(game.draw);
+  },
+  teardown: function () {
+    // Used for cleaning collections at the end of a frame
+    // Player
+    for (var bullet = player.gun.bullets.length - 1; bullet >= 0; bullet--) {
+      if (player.gun.bullets[bullet].destroyed) {
+        player.gun.bullets.splice(bullet, 1);
+      }
+    }
+
+    window.requestAnimationFrame(game.teardown);
   }
 };
 
@@ -237,6 +249,8 @@ var player = {
     if (input.keyboard[" "] && player.gun.cooldown == 0) {
       for (var barrel = 0; barrel < player.gun.barrels; barrel++) {
         var bullet = {
+          disabled: false,
+          destroyed: false,
           position: {
             x: player.position.x - 8,
             y: player.position.y,
@@ -272,16 +286,15 @@ var player = {
       // Collision with enemies
       if (opponent.enemies.length > 0) {
         for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
-          if (collision.check.rectangle(opponent.enemies[enemy], player.gun.bullets[bullet]), -16 / 2) {
-            console.log("Hit!");
+          if (collision.check.rectangle(opponent.enemies[enemy], player.gun.bullets[bullet], -16 / 2)) {
+            player.gun.bullets[bullet].destroyed = true;
           }
         };
       }
 
-      // Remove invisible bullets from the array
+      // Out of bounds
       if (player.gun.bullets[bullet].position.y < 0) {
-        player.gun.bullets.splice(bullet, 1);
-        break;
+        player.gun.bullets[bullet].destroyed = true;
       }
     }
 
