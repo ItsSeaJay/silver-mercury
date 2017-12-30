@@ -289,7 +289,7 @@ var player = {
           if (collision.check.rectangle(opponent.enemies[enemy], player.gun.bullets[bullet], -16 / 2)) {
             player.gun.bullets[bullet].destroyed = true;
           }
-        };
+        }
       }
 
       // Out of bounds
@@ -323,7 +323,7 @@ var player = {
         if (collision.check.rectangle(player, opponent.enemies[enemy], -player.width / 2)) {
           player.health.current--;
         }
-      };
+      }
     }
 
     // Death
@@ -354,7 +354,7 @@ var player = {
     );
 
     // Bullets
-    for (bullet of player.gun.bullets) {
+    for (var bullet of player.gun.bullets) {
       canvas.context.fillStyle = canvas.colours.black
       canvas.context.fillRect(
         bullet.position.x,
@@ -373,6 +373,11 @@ var player = {
     canvas.context.font = "32px 'Roboto', sans-serif";
     canvas.context.textAlign = "center";
     canvas.context.fillText(seconds, (canvas.width / 2), canvas.height - 32);
+
+    // Warning
+    if (player.health.current < 25 || player.health.current > 75) {
+      canvas.context.fillText("Warning!", player.position.x, player.position.y + player.height);
+    }
   }
 };
 
@@ -419,7 +424,7 @@ var opponent = {
     if (opponent.enemies.length > 0) {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
         opponent.enemies[enemy].update();
-      };
+      }
     }
   },
   draw: function () {
@@ -439,7 +444,7 @@ var opponent = {
 
 // MIT license
 
-(function() {
+(function () {
     var lastTime = 0;
     var vendors = ["ms", "moz", "webkit", "o"];
     for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
