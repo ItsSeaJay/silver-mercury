@@ -108,10 +108,10 @@ var Maths = {
   clamp: function (value, minimum, maximum) {
     return Math.max(minimum, Math.min(maximum, value));
   },
-  rotation: function (value) {
+  rotation: function (degrees) {
     return {
-      x: Math.sin(Maths.radians(value)),
-      y: Math.cos(Maths.radians(value))
+      x: Math.sin(Maths.radians(degrees)),
+      y: Math.cos(Maths.radians(degrees))
     };
   },
   degrees: function (radians) {
@@ -125,6 +125,17 @@ var Maths = {
   }
 };
 
+var collision = {
+  check: {
+    rectangle: function () {
+
+    },
+    ellipse: function () {
+
+    }
+  }
+}
+
 var player = {
   position: {
     x: canvas.width / 2,
@@ -132,6 +143,13 @@ var player = {
   },
   width: 32,
   height: 32,
+  hitbox: {
+    width: 32,
+    height: 32
+  },
+  radius: {
+    maximum: canvas.width * 2
+  },
   speed: {
     normal: 5,
     attack: 3,
@@ -149,13 +167,14 @@ var player = {
   },
   health: {
     maximum: 100,
-    current: 100,
-    decay: 0
+    current: 10,
+    decay: 4,
+    regeneration: 0.33
   },
   score: 0,
   update: function () {
     // Score
-    player.score = new Date(game.time.elapsed).getTime('HH MM SS');
+    player.score += 1 / 60;
 
     // Movement
     // Vertical
@@ -183,7 +202,7 @@ var player = {
     player.position.x = Maths.clamp(
       player.position.x,
       0,
-      canvas.width - player.width,
+      canvas.width - player.hitbox.width,
     );
     player.position.y = Maths.clamp(
       player.position.y,
@@ -208,7 +227,10 @@ var player = {
           velocity: 16
         }
 
-        // Shoot the bullet and player.gun.reload
+        // Lose health for shooting
+        player.health.current -= player.health.decay
+
+        // Shoot the bullet and reload
         player.gun.bullets.push(bullet);
         player.gun.cooldown = player.gun.reload;
       }
@@ -241,34 +263,26 @@ var player = {
 
     // Health
     // Decay
-    player.health.current -= player.health.decay;
+    player.health.current += player.health.regeneration;
 
     // Clamp
     player.health.current = Maths.clamp(player.health.current, 0, player.health.maximum);
   },
   draw: function () {
     // Draw functions depth first
-    // Health
-    var radius = (player.health.current / player.health.maximum) * canvas.height;
+    // Ship
+    var radius = (player.health.current / player.health.maximum) * (player.hitbox.width);
+
     canvas.context.fillStyle = colours.red;
     canvas.context.beginPath();
     canvas.context.arc(
-      player.position.x + (player.width / 2),
-      player.position.y + (player.width / 2),
+      player.position.x + (player.hitbox.width / 2),
+      player.position.y + (player.hitbox.width / 2),
       radius,
       0,
       2 * Math.PI // Circumfrence
     );
     canvas.context.fill();
-
-    // Ship
-    canvas.context.fillStyle = colours.black;
-    canvas.context.fillRect(
-      player.position.x,
-      player.position.y,
-      player.width,
-      player.height
-    );
 
     // Bullets
     for (bullet of player.gun.bullets) {
@@ -280,18 +294,15 @@ var player = {
       );
     }
 
-    // Enemy Test
-    // TODO: move to own objects
-    canvas.context.fillRect(
-      (canvas.width / 2) + (Math.sin(game.time.elapsed * 4) * (canvas.width / 3)),
-      0,
-      player.width,
-      player.height
-    );
-
     // Score
+    var date = new Date(null);
+    date.setSeconds(player.score);
+    var seconds = date.toISOString().substr(11, 8);
+
+    canvas.context.fillStyle = colours.black;
     canvas.context.font = "32px 'Roboto', sans-serif";
-    canvas.context.fillText(player.score, 32, canvas.height - 36);
+    canvas.context.textAlign = "center";
+    canvas.context.fillText(seconds, (canvas.width / 2), canvas.height - 32);
   }
 };
 
