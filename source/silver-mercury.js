@@ -217,8 +217,8 @@ var player = {
       for (var barrel = 0; barrel < player.gun.barrels; barrel++) {
         var bullet = {
           position: {
-            x: player.position.x + 8,
-            y: player.position.y + 16,
+            x: player.position.x - 8,
+            y: player.position.y,
           },
           width: 16,
           height: 16,
@@ -276,8 +276,8 @@ var player = {
     canvas.context.fillStyle = colours.black;
     canvas.context.beginPath();
     canvas.context.arc(
-      player.position.x + (player.hitbox.width / 2),
-      player.position.y + (player.hitbox.width / 2),
+      player.position.x,
+      player.position.y,
       radius,
       0,
       2 * Math.PI // Circumfrence
