@@ -22,6 +22,7 @@ var game = {
     canvas.node.style.backgroundColor = canvas.colours.white;
 
     input.handle();
+    opponent.start();
 
     window.requestAnimationFrame(game.update);
     window.requestAnimationFrame(game.draw);
@@ -40,6 +41,7 @@ var game = {
         break;
       case game.states.playing:
         player.update();
+        opponent.update();
         break;
     }
 
@@ -48,7 +50,15 @@ var game = {
   draw: function () {
     canvas.clear();
 
-    player.draw();
+    switch (game.state) {
+      case game.states.paused:
+
+        break;
+      case game.states.playing:
+        player.draw();
+        opponent.draw();
+        break;
+    }
 
     window.requestAnimationFrame(game.draw);
   }
@@ -64,24 +74,18 @@ var canvas = {
     white: "#FFFFFF"
   },
   get context () {
-    return this.node.getContext("2d");
+    return canvas.node.getContext("2d");
   },
   clear: function () {
-    this.context.clearRect(0, 0, this.width, this.height);
+    canvas.context.clearRect(0, 0, canvas.width, canvas.height);
   }
-};
-
-var colours = {
-  red: "#AC3232",
-  black: "#000000",
-  white: "#FFFFFF"
 };
 
 var input = {
   keyboard: [],
   handle: function () {
     // Key Down
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener("keydown", function(event) {
         input.keyboard[event.key] = true;
 
         if (event.key != "r" && event.key != "F5" && event.key != "F12") {
@@ -90,7 +94,7 @@ var input = {
     });
 
     // Key Press
-    document.addEventListener('keypress', function (event) {
+    document.addEventListener("keypress", function (event) {
 
       if (event.key != "r" && event.key != "F5" && event.key != "F12") {
         event.preventDefault();
@@ -98,7 +102,7 @@ var input = {
     });
 
     // Key Up
-    document.addEventListener('keyup', function(event) {
+    document.addEventListener("keyup", function(event) {
         input.keyboard[event.key] = false;
 
         if (event.key != "r" && event.key != "F5" && event.key != "F12") {
@@ -143,16 +147,6 @@ var collision = {
   }
 }
 
-// Collision
-var collider = {
-  position: {
-    x: 32,
-    y: 32
-  },
-  width: 32,
-  height: 32
-};
-
 var player = {
   position: {
     x: canvas.width / 2,
@@ -176,13 +170,13 @@ var player = {
   gun: {
     bullets: [],
     barrels: 1, // How many shots are fired at once
-    reload: 8, // How many frames needed to reload
+    reload: 4, // How many frames needed to reload
     cooldown: 0
   },
   health: {
     maximum: 100,
     current: 10,
-    decay: 3,
+    decay: 1,
     regeneration: 0.1
   },
   score: 0,
@@ -213,7 +207,7 @@ var player = {
     player.position.x += player.velocity.x;
     player.position.y += player.velocity.y;
 
-    // Clamp position
+    // Clamp position in view
     player.position.x = Maths.clamp(
       player.position.x,
       0,
@@ -289,10 +283,12 @@ var player = {
     player.height = player.radius.current;
 
     // Collision Detection
-    if (collision.check.rectangle(player, collider, (-player.width / 2))) {
-      player.colour = canvas.colours.red;
-    } else {
-      player.colour = canvas.colours.black;
+    if (opponent.enemies.length > 0) {
+      for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+        if (collision.check.rectangle(player, opponent.enemies[enemy], -player.width)) {
+
+        }
+      };
     }
   },
   draw: function () {
@@ -337,15 +333,45 @@ var player = {
     canvas.context.font = "32px 'Roboto', sans-serif";
     canvas.context.textAlign = "center";
     canvas.context.fillText(seconds, (canvas.width / 2), canvas.height - 32);
+  }
+};
 
-    // Collider
-    canvas.context.fillStyle = canvas.colours.black;
-    canvas.context.fillRect(
-      collider.position.x,
-      collider.position.y,
-      collider.width,
-      collider.height
-    );
+var opponent = {
+  enemies: [],
+  enemy: {
+    asteroid: {
+      position: {
+        x: canvas.width / 2,
+        y: -64
+      },
+      width: 64,
+      height: 64
+    }
+  },
+  start: function () {
+    opponent.enemies.push(opponent.enemy.asteroid);
+  },
+  update: function () {
+    // Iterates backwards for easy removal from array
+    if (opponent.enemies.length > 0) {
+      for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+        opponent.enemies[enemy].position.y += 4;
+      };
+    }
+  },
+  draw: function () {
+    // Iterates backwards for easy removal from array
+    if (opponent.enemies.length > 0) {
+      for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+        canvas.context.fillStyle = canvas.colours.red;
+        canvas.context.fillRect(
+          opponent.enemies[enemy].position.x,
+          opponent.enemies[enemy].position.y,
+          opponent.enemies[enemy].width,
+          opponent.enemies[enemy].height
+        );
+      };
+    }
   }
 };
 
@@ -358,11 +384,11 @@ var player = {
 
 (function() {
     var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    var vendors = ["ms", "moz", "webkit", "o"];
     for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+        window.requestAnimationFrame = window[vendors[x] + "RequestAnimationFrame"];
+        window.cancelAnimationFrame = window[vendors[x] + "CancelAnimationFrame"]
+                                   || window[vendors[x] + "CancelRequestAnimationFrame"];
     }
 
     if (!window.requestAnimationFrame)
