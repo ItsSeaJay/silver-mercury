@@ -19,7 +19,7 @@ var game = {
     canvas.node.width = canvas.width;
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
-    canvas.node.style.backgroundColor = colours.white;
+    canvas.node.style.backgroundColor = canvas.colours.white;
 
     input.handle();
 
@@ -58,6 +58,11 @@ var canvas = {
   node: document.createElement("canvas"),
   width: 360,
   height: 640,
+  colours: {
+    red: "#AC3232",
+    black: "#000000",
+    white: "#FFFFFF"
+  },
   get context () {
     return this.node.getContext("2d");
   },
@@ -156,7 +161,8 @@ var player = {
   width: 32,
   height: 32,
   radius: {
-    maximum: canvas.width / 3
+    maximum: canvas.width / 3,
+    current: 0 // Set later on
   },
   speed: {
     normal: 5,
@@ -180,7 +186,7 @@ var player = {
     regeneration: 0.1
   },
   score: 0,
-  colour: colours.black,
+  colour: canvas.colours.black,
   update: function () {
     // Score
     player.score += 1 / 60;
@@ -271,37 +277,49 @@ var player = {
     }
 
     // Health
-    // Decay
+    // Regeneration
     player.health.current += player.health.regeneration;
 
     // Clamp
     player.health.current = Maths.clamp(player.health.current, 0, player.health.maximum);
 
+    // Growth/Shrinking
+    player.radius.current = (player.health.current / player.health.maximum) * (player.radius.maximum);
+    player.width = player.radius.current;
+    player.height = player.radius.current;
+
     // Collision Detection
     if (collision.check.rectangle(player, collider)) {
-      player.colour = colours.red;
+      player.colour = canvas.colours.red;
     } else {
-      player.colour = colours.black;
+      player.colour = canvas.colours.black;
     }
   },
   draw: function () {
-    // Draw functions depth first
+    // NOTE: Draw method renders the furthest away object first
     // Ship
-    var radius = (player.health.current / player.health.maximum) * (player.radius.maximum);
-
     canvas.context.fillStyle = player.colour;
     canvas.context.beginPath();
     canvas.context.arc(
       player.position.x,
       player.position.y,
-      radius,
+      player.radius.current,
       0,
       2 * Math.PI // Circumfrence
     );
     canvas.context.fill();
+    // Hitbox
+    canvas.context.fillStyle = canvas.colours.white
+    canvas.context.fillRect(
+      player.position.x - (player.width / 2),
+      player.position.y - (player.height / 2),
+      player.width,
+      player.height
+    );
 
     // Bullets
     for (bullet of player.gun.bullets) {
+      canvas.context.fillStyle = canvas.colours.black
       canvas.context.fillRect(
         bullet.position.x,
         bullet.position.y,
@@ -315,13 +333,13 @@ var player = {
     date.setSeconds(player.score);
     var seconds = date.toISOString().substr(11, 8);
 
-    canvas.context.fillStyle = colours.red;
+    canvas.context.fillStyle = canvas.colours.red;
     canvas.context.font = "32px 'Roboto', sans-serif";
     canvas.context.textAlign = "center";
     canvas.context.fillText(seconds, (canvas.width / 2), canvas.height - 32);
 
     // Collider
-    canvas.context.fillStyle = colours.black;
+    canvas.context.fillStyle = canvas.colours.black;
     canvas.context.fillRect(
       collider.position.x,
       collider.position.y,
