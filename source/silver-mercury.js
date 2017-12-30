@@ -127,14 +127,26 @@ var Maths = {
 
 var collision = {
   check: {
-    rectangle: function () {
-
-    },
-    ellipse: function () {
-
+    rectangle: function (a, b) {
+      return !(
+        ((a.position.y + a.height) < (b.position.y)) ||
+        (a.position.y > (b.position.y + b.height)) ||
+        ((a.position.x + a.width) < b.position.x) ||
+        (a.position.x > (b.position.x + b.width))
+      );
     }
   }
 }
+
+// Collision
+var collider = {
+  position: {
+    x: 32,
+    y: 32
+  },
+  width: 32,
+  height: 32
+};
 
 var player = {
   position: {
@@ -143,10 +155,6 @@ var player = {
   },
   width: 32,
   height: 32,
-  hitbox: {
-    width: 32,
-    height: 32
-  },
   radius: {
     maximum: canvas.width / 3
   },
@@ -172,6 +180,7 @@ var player = {
     regeneration: 0.1
   },
   score: 0,
+  colour: colours.black,
   update: function () {
     // Score
     player.score += 1 / 60;
@@ -267,13 +276,20 @@ var player = {
 
     // Clamp
     player.health.current = Maths.clamp(player.health.current, 0, player.health.maximum);
+
+    // Collision Detection
+    if (collision.check.rectangle(player, collider)) {
+      player.colour = colours.red;
+    } else {
+      player.colour = colours.black;
+    }
   },
   draw: function () {
     // Draw functions depth first
     // Ship
     var radius = (player.health.current / player.health.maximum) * (player.radius.maximum);
 
-    canvas.context.fillStyle = colours.black;
+    canvas.context.fillStyle = player.colour;
     canvas.context.beginPath();
     canvas.context.arc(
       player.position.x,
@@ -303,6 +319,15 @@ var player = {
     canvas.context.font = "32px 'Roboto', sans-serif";
     canvas.context.textAlign = "center";
     canvas.context.fillText(seconds, (canvas.width / 2), canvas.height - 32);
+
+    // Collider
+    canvas.context.fillStyle = colours.black;
+    canvas.context.fillRect(
+      collider.position.x,
+      collider.position.y,
+      collider.width,
+      collider.height
+    );
   }
 };
 
