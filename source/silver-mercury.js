@@ -341,11 +341,17 @@ var opponent = {
   enemy: {
     asteroid: {
       position: {
-        x: canvas.width / 2,
-        y: -64
+        x: 0,
+        y: 0
       },
       width: 64,
       height: 64,
+      spawn: function (x, y) {
+        opponent.enemy.asteroid.position.x = x;
+        opponent.enemy.asteroid.position.y = y;
+
+        opponent.enemies.push(opponent.enemy.asteroid);
+      },
       update: function () {
         opponent.enemy.asteroid.position.y++;
 
@@ -354,12 +360,18 @@ var opponent = {
         }
       },
       draw: function () {
-
+        canvas.context.fillStyle = canvas.colours.red;
+        canvas.context.fillRect(
+          opponent.enemy.asteroid.position.x,
+          opponent.enemy.asteroid.position.y,
+          opponent.enemy.asteroid.width,
+          opponent.enemy.asteroid.height
+        );
       }
     }
   },
   start: function () {
-    var slop = opponent.enemies.push(opponent.enemy.asteroid);
+    opponent.enemy.asteroid.spawn(Math.random() * (canvas.width), 0);
   },
   update: function () {
     // Iterates backwards for easy removal from array
@@ -373,18 +385,9 @@ var opponent = {
     // Iterates backwards for easy removal from array
     if (opponent.enemies.length > 0) {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
-        canvas.context.fillStyle = canvas.colours.red;
-        canvas.context.fillRect(
-          opponent.enemies[enemy].position.x,
-          opponent.enemies[enemy].position.y,
-          opponent.enemies[enemy].width,
-          opponent.enemies[enemy].height
-        );
+        opponent.enemies[enemy].draw()
       };
     }
-  },
-  spawn: function (enemy, x, y) {
-
   }
 };
 
