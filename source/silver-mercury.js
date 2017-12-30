@@ -132,12 +132,12 @@ var Maths = {
 
 var collision = {
   check: {
-    rectangle: function (a, b) {
+    rectangle: function (a, b, offset) {
       return !(
-        ((a.position.y + a.height) < (b.position.y)) ||
-        (a.position.y > (b.position.y + b.height)) ||
-        ((a.position.x + a.width) < b.position.x) ||
-        (a.position.x > (b.position.x + b.width))
+        ((a.position.y + a.height + offset) < (b.position.y)) ||
+        (a.position.y + offset > (b.position.y + b.height)) ||
+        ((a.position.x + a.width + offset) < b.position.x) ||
+        (a.position.x + offset > (b.position.x + b.width))
       );
     }
   }
@@ -289,7 +289,7 @@ var player = {
     player.height = player.radius.current;
 
     // Collision Detection
-    if (collision.check.rectangle(player, collider)) {
+    if (collision.check.rectangle(player, collider, (-player.width / 2))) {
       player.colour = canvas.colours.red;
     } else {
       player.colour = canvas.colours.black;
