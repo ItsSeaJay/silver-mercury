@@ -33,6 +33,7 @@ var game = {
       game.time.elapsed += 1 / 60;
     } else {
       game.time.elapsed = 0;
+      // Easter egg for future sentients
       alert("You waited four million years. Congratulations.");
     }
 
@@ -272,6 +273,15 @@ var player = {
       if (player.gun.bullets[bullet].position.y < 0) {
         player.gun.bullets.splice(bullet, 1);
       }
+
+      // Collision with enemies
+      if (opponent.enemies.length > 0) {
+        for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+          if (collision.check.rectangle(player.gun.bullets[bullet], opponent.enemies[enemy], -16 / 2)) {
+            
+          }
+        };
+      }
     }
 
     // Braking
@@ -369,7 +379,7 @@ var opponent = {
         opponent.enemies.push(opponent.enemy.asteroid);
       },
       update: function () {
-        opponent.enemy.asteroid.position.y += 2;
+        opponent.enemy.asteroid.position.y += 4;
 
         if (opponent.enemy.asteroid.position.y > canvas.height) {
           opponent.enemy.asteroid.position.x = (Math.random() * canvas.width) - opponent.enemy.asteroid.width;
