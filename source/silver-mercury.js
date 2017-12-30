@@ -269,18 +269,19 @@ var player = {
       player.gun.bullets[bullet].position.x += velocity.x;
       player.gun.bullets[bullet].position.y += velocity.y;
 
-      // Remove invisible bullets from the array
-      if (player.gun.bullets[bullet].position.y < 0) {
-        player.gun.bullets.splice(bullet, 1);
-      }
-
       // Collision with enemies
       if (opponent.enemies.length > 0) {
         for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
-          if (collision.check.rectangle(player.gun.bullets[bullet], opponent.enemies[enemy], -16 / 2)) {
-            
+          if (collision.check.rectangle(opponent.enemies[enemy], player.gun.bullets[bullet]), -16 / 2) {
+            console.log("Hit!");
           }
         };
+      }
+
+      // Remove invisible bullets from the array
+      if (player.gun.bullets[bullet].position.y < 0) {
+        player.gun.bullets.splice(bullet, 1);
+        break;
       }
     }
 
@@ -428,7 +429,7 @@ var opponent = {
 (function() {
     var lastTime = 0;
     var vendors = ["ms", "moz", "webkit", "o"];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x] + "RequestAnimationFrame"];
         window.cancelAnimationFrame = window[vendors[x] + "CancelAnimationFrame"]
                                    || window[vendors[x] + "CancelRequestAnimationFrame"];
