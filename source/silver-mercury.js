@@ -87,7 +87,6 @@ var game = {
     for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
       if (opponent.enemies[enemy].destroyed) {
         opponent.enemies.splice(enemy, 1);
-        console.log('destroyed');
       }
     }
 
@@ -405,10 +404,14 @@ var opponent = {
         current: 3
       },
       spawn: function (x, y) {
-        opponent.enemy.asteroid.position.x = x;
-        opponent.enemy.asteroid.position.y = y;
+        // opponent.enemy.asteroid.position.x = x;
+        // opponent.enemy.asteroid.position.y = y;
+        //
+        // opponent.enemies.push(opponent.enemy.asteroid);
 
-        opponent.enemies.push(opponent.enemy.asteroid);
+        var enemy = opponent.enemy.asteroid;
+
+        opponent.enemies.push(enemy);
       },
       update: function () {
         opponent.enemy.asteroid.position.y += 4;
@@ -437,15 +440,26 @@ var opponent = {
     opponent.enemy.asteroid.spawn(Math.random() * (canvas.width), 0);
   },
   update: function () {
-    // Iterates backwards for easy removal from array
     if (opponent.enemies.length > 0) {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
         opponent.enemies[enemy].update();
       }
     }
+
+    console.log(opponent.enemies.length);
+
+    // Spawn asteroids infinitely
+    // TODO: Add waves to the game that make for interesting patterns to solve
+    if (opponent.enemies.length < 1) {
+      opponent.enemy.asteroid.spawn(
+        // (Math.random() * canvas.width) - opponent.enemy.asteroid.width,
+        // -opponent.enemy.asteroid.height
+        0,
+        0
+      );
+    }
   },
   draw: function () {
-    // Iterates backwards for easy removal from array
     if (opponent.enemies.length > 0) {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
         opponent.enemies[enemy].draw()
