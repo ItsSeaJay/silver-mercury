@@ -77,10 +77,17 @@ var game = {
   },
   teardown: function () {
     // Used for cleaning collections at the end of a frame
-    // Player
+    // Player Bullets
     for (var bullet = player.gun.bullets.length - 1; bullet >= 0; bullet--) {
       if (player.gun.bullets[bullet].destroyed) {
         player.gun.bullets.splice(bullet, 1);
+      }
+    }
+    // Enemies
+    for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+      if (opponent.enemies[enemy].destroyed) {
+        opponent.enemies.splice(enemy, 1);
+        console.log('destroyed');
       }
     }
 
@@ -287,6 +294,7 @@ var player = {
       if (opponent.enemies.length > 0) {
         for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
           if (collision.check.rectangle(opponent.enemies[enemy], player.gun.bullets[bullet], -16 / 2)) {
+            opponent.enemies[enemy].health.current--;
             player.gun.bullets[bullet].destroyed = true;
           }
         }
@@ -385,12 +393,17 @@ var opponent = {
   enemies: [],
   enemy: {
     asteroid: {
+      destroyed: false,
       position: {
         x: 0,
         y: 0
       },
       width: 64,
       height: 64,
+      health: {
+        maximum: 3,
+        current: 3
+      },
       spawn: function (x, y) {
         opponent.enemy.asteroid.position.x = x;
         opponent.enemy.asteroid.position.y = y;
@@ -403,6 +416,10 @@ var opponent = {
         if (opponent.enemy.asteroid.position.y > canvas.height) {
           opponent.enemy.asteroid.position.x = (Math.random() * canvas.width) - opponent.enemy.asteroid.width;
           opponent.enemy.asteroid.position.y = -opponent.enemy.asteroid.height;
+        }
+
+        if (opponent.enemy.asteroid.health.current <= 0) {
+          opponent.enemy.asteroid.destroyed = true;
         }
       },
       draw: function () {
