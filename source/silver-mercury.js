@@ -391,48 +391,37 @@ var player = {
 var opponent = {
   enemies: [],
   enemy: {
-    asteroid: {
-      destroyed: false,
-      position: {
-        x: 0,
-        y: 0
-      },
-      width: 64,
-      height: 64,
-      health: {
+    asteroid: function (x, y) {
+      this.destroyed = false,
+      this.position = {
+        x: x,
+        y: y
+      }
+      this.width = 64;
+      this.height = 64;
+      this.health = {
         maximum: 3,
         current: 3
-      },
-      spawn: function (x, y) {
-        var enemy = opponent.enemy.asteroid;
-
-        opponent.enemies.push(enemy);
-      },
-      update: function () {
-        opponent.enemy.asteroid.position.y += 4;
-
-        if (opponent.enemy.asteroid.position.y > canvas.height) {
-          opponent.enemy.asteroid.position.x = (Math.random() * canvas.width) - opponent.enemy.asteroid.width;
-          opponent.enemy.asteroid.position.y = -opponent.enemy.asteroid.height;
+      };
+      this.update = function () {
+        if (this.health.current <= 0) {
+          destroyed = true;
         }
-
-        if (opponent.enemy.asteroid.health.current <= 0) {
-          opponent.enemy.asteroid.destroyed = true;
-        }
-      },
-      draw: function () {
+      }
+      this.draw = function () {
         canvas.context.fillStyle = canvas.colours.red;
         canvas.context.fillRect(
-          opponent.enemy.asteroid.position.x,
-          opponent.enemy.asteroid.position.y,
-          opponent.enemy.asteroid.width,
-          opponent.enemy.asteroid.height
+          this.position.x,
+          this.position.y,
+          this.width,
+          this.height
         );
       }
     }
   },
   start: function () {
-    opponent.enemy.asteroid.spawn(Math.random() * (canvas.width), 0);
+    opponent.spawn(opponent.enemy.asteroid, Math.random() * (canvas.width), 0);
+    opponent.spawn(opponent.enemy.asteroid, Math.random() * (canvas.width), 0);
   },
   update: function () {
     if (opponent.enemies.length > 0) {
@@ -447,14 +436,17 @@ var opponent = {
         opponent.enemies[enemy].draw()
       };
     }
+  },
+  spawn: function (enemy, x, y) {
+    var object = new enemy(x, y);
+
+    opponent.enemies.push(object);
   }
 };
 
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
-
 // requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
-
 // MIT license
 
 (function () {
