@@ -423,11 +423,43 @@ var opponent = {
           this.height
         );
       }
+    },
+    wave: function (x, y) {
+      this.destroyed = false,
+      this.position = {
+        x: x,
+        y: y
+      }
+      this.width = 64;
+      this.height = 64;
+      this.speed = 4;
+      this.health = {
+        maximum: 8,
+        current: 8
+      };
+      this.update = function () {
+        this.position.x += Math.sin(game.time.elapsed);
+        this.position.y += this.speed;
+
+        // Screen wrap
+        if (this.position.y >= canvas.height) {
+          this.position.y = -this.height;
+        }
+      }
+      this.draw = function () {
+        canvas.context.fillStyle = canvas.colours.red;
+        canvas.context.fillRect(
+          this.position.x,
+          this.position.y,
+          this.width,
+          this.height
+        );
+      }
     }
   },
   start: function () {
     opponent.spawn(opponent.enemy.asteroid, Math.random() * (canvas.width), 0);
-    opponent.spawn(opponent.enemy.asteroid, Math.random() * (canvas.width), 0);
+    opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width), 0);
   },
   update: function () {
     if (opponent.enemies.length > 0) {
