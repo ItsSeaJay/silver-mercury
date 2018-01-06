@@ -400,12 +400,18 @@ var opponent = {
       this.width = 64;
       this.height = 64;
       this.health = {
-        maximum: 3,
-        current: 3
+        maximum: 8,
+        current: 8
       };
       this.update = function () {
+        this.position.y++;
+
+        if (this.position.y >= canvas.height) {
+          this.position.y = -this.height;
+        }
+
         if (this.health.current <= 0) {
-          destroyed = true;
+          this.destroyed = true;
         }
       }
       this.draw = function () {
