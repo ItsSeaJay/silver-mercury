@@ -404,11 +404,6 @@ var opponent = {
         current: 3
       },
       spawn: function (x, y) {
-        // opponent.enemy.asteroid.position.x = x;
-        // opponent.enemy.asteroid.position.y = y;
-        //
-        // opponent.enemies.push(opponent.enemy.asteroid);
-
         var enemy = opponent.enemy.asteroid;
 
         opponent.enemies.push(enemy);
@@ -444,19 +439,6 @@ var opponent = {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
         opponent.enemies[enemy].update();
       }
-    }
-
-    console.log(opponent.enemies.length);
-
-    // Spawn asteroids infinitely
-    // TODO: Add waves to the game that make for interesting patterns to solve
-    if (opponent.enemies.length < 1) {
-      opponent.enemy.asteroid.spawn(
-        // (Math.random() * canvas.width) - opponent.enemy.asteroid.width,
-        // -opponent.enemy.asteroid.height
-        0,
-        0
-      );
     }
   },
   draw: function () {
