@@ -458,8 +458,8 @@ var opponent = {
     }
   },
   start: function () {
-    opponent.spawn(opponent.enemy.asteroid, Math.random() * (canvas.width), 0);
-    opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width), 0);
+    opponent.spawn(opponent.enemy.asteroid, Math.random()* (canvas.width - 64), 0);
+    opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width - 64), 0);
   },
   update: function () {
     if (opponent.enemies.length > 0) {
