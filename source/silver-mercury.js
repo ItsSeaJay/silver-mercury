@@ -8,28 +8,46 @@ var game = {
   node: document.getElementById("silver-mercury"),
   states: {
     paused: 0,
-    playing: 1
+    playing: 1,
+    over: 2
   },
   state: 1,
+  time: { // Measured in 1/60th second intervals
+    elapsed: 0
+  },
   start: function () {
-    game.node.parentNode.appendChild(canvas.node);
+    game.node.parentNode.insertBefore(canvas.node, game.node);
     canvas.node.width = canvas.width;
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
-    canvas.node.style.backgroundColor = colours.white;
+    canvas.node.style.backgroundColor = canvas.colours.white;
 
     input.handle();
+    opponent.start();
 
     window.requestAnimationFrame(game.update);
     window.requestAnimationFrame(game.draw);
+    window.requestAnimationFrame(game.teardown);
   },
   update: function () {
+    if (game.time.elapsed < Maths.limit) {
+      game.time.elapsed += 1 / 60;
+    } else {
+      game.time.elapsed = 0;
+      // Easter egg for future sentients
+      alert("You waited four million years. Congratulations.");
+    }
+
     switch (game.state) {
       case game.states.paused:
 
         break;
       case game.states.playing:
         player.update();
+        opponent.update();
+        break;
+      case game.states.over:
+
         break;
     }
 
@@ -38,9 +56,41 @@ var game = {
   draw: function () {
     canvas.clear();
 
-    player.draw();
+    switch (game.state) {
+      case game.states.paused:
+
+        break;
+      case game.states.playing:
+        player.draw();
+        opponent.draw();
+        break;
+      case game.states.over:
+        canvas.context.fillStyle = canvas.colours.black;
+        canvas.context.font = "32px 'Roboto', sans-serif";
+        canvas.context.textAlign = "center";
+        canvas.context.fillText("Game Over", (canvas.width / 2), canvas.height / 2);
+        canvas.context.fillText("Please Refresh", (canvas.width / 2), canvas.height / 2 + 32);
+        break;
+    }
 
     window.requestAnimationFrame(game.draw);
+  },
+  teardown: function () {
+    // Used for cleaning collections at the end of a frame
+    // Player Bullets
+    for (var bullet = player.gun.bullets.length - 1; bullet >= 0; bullet--) {
+      if (player.gun.bullets[bullet].destroyed) {
+        player.gun.bullets.splice(bullet, 1);
+      }
+    }
+    // Enemies
+    for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+      if (opponent.enemies[enemy].destroyed) {
+        opponent.enemies.splice(enemy, 1);
+      }
+    }
+
+    window.requestAnimationFrame(game.teardown);
   }
 };
 
@@ -48,25 +98,24 @@ var canvas = {
   node: document.createElement("canvas"),
   width: 360,
   height: 640,
+  colours: {
+    red: "#AC3232",
+    black: "#000000",
+    white: "#FFFFFF"
+  },
   get context () {
-    return this.node.getContext("2d");
+    return canvas.node.getContext("2d");
   },
   clear: function () {
-    this.context.clearRect(0, 0, this.width, this.height);
+    canvas.context.clearRect(0, 0, canvas.width, canvas.height);
   }
-};
-
-var colours = {
-  red: "#AC3232",
-  black: "#000000",
-  white: "#FFFFFF"
 };
 
 var input = {
   keyboard: [],
   handle: function () {
     // Key Down
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener("keydown", function(event) {
         input.keyboard[event.key] = true;
 
         if (event.key != "r" && event.key != "F5" && event.key != "F12") {
@@ -75,7 +124,7 @@ var input = {
     });
 
     // Key Press
-    document.addEventListener('keypress', function (event) {
+    document.addEventListener("keypress", function (event) {
 
       if (event.key != "r" && event.key != "F5" && event.key != "F12") {
         event.preventDefault();
@@ -83,7 +132,7 @@ var input = {
     });
 
     // Key Up
-    document.addEventListener('keyup', function(event) {
+    document.addEventListener("keyup", function(event) {
         input.keyboard[event.key] = false;
 
         if (event.key != "r" && event.key != "F5" && event.key != "F12") {
@@ -94,13 +143,14 @@ var input = {
 };
 
 var Maths = {
+  limit: 9007199254740991, // Highest possible integer storable in Javascript
   clamp: function (value, minimum, maximum) {
     return Math.max(minimum, Math.min(maximum, value));
   },
-  rotation: function (value) {
+  rotation: function (degrees) {
     return {
-      x: Math.sin(Maths.radians(value)),
-      y: Math.cos(Maths.radians(value))
+      x: Math.sin(Maths.radians(degrees)),
+      y: Math.cos(Maths.radians(degrees))
     };
   },
   degrees: function (radians) {
@@ -114,6 +164,19 @@ var Maths = {
   }
 };
 
+var collision = {
+  check: {
+    rectangle: function (a, b, offset) {
+      return !(
+        ((a.position.y + a.height + offset) < (b.position.y)) ||
+        (a.position.y + offset > (b.position.y + b.height)) ||
+        ((a.position.x + a.width + offset) < b.position.x) ||
+        (a.position.x + offset > (b.position.x + b.width))
+      );
+    }
+  }
+}
+
 var player = {
   position: {
     x: canvas.width / 2,
@@ -121,6 +184,10 @@ var player = {
   },
   width: 32,
   height: 32,
+  radius: {
+    maximum: canvas.width / 3,
+    current: 0 // Set later on
+  },
   speed: {
     normal: 5,
     attack: 3,
@@ -133,16 +200,21 @@ var player = {
   gun: {
     bullets: [],
     barrels: 1, // How many shots are fired at once
-    reload: 8, // How many frames needed to reload
+    reload: 4, // How many frames needed to reload
     cooldown: 0
   },
   health: {
     maximum: 100,
-    current: 100,
-    decay: 0.1
+    current: 10,
+    decay: 1,
+    regeneration: 0.1
   },
   score: 0,
+  colour: canvas.colours.black,
   update: function () {
+    // Score
+    player.score += 1 / 60;
+
     // Movement
     // Vertical
     if (input.keyboard["ArrowUp"] || input.keyboard["w"]) {
@@ -165,16 +237,16 @@ var player = {
     player.position.x += player.velocity.x;
     player.position.y += player.velocity.y;
 
-    // Clamp position
+    // Clamp position in view
     player.position.x = Maths.clamp(
       player.position.x,
       0,
-      canvas.width - player.width,
+      canvas.width,
     );
     player.position.y = Maths.clamp(
       player.position.y,
       0,
-      canvas.height - player.height,
+      canvas.height,
     );
 
     // Shooting
@@ -183,9 +255,11 @@ var player = {
     if (input.keyboard[" "] && player.gun.cooldown == 0) {
       for (var barrel = 0; barrel < player.gun.barrels; barrel++) {
         var bullet = {
+          disabled: false,
+          destroyed: false,
           position: {
-            x: player.position.x + 8,
-            y: player.position.y + 16,
+            x: player.position.x - 8,
+            y: player.position.y,
           },
           width: 16,
           height: 16,
@@ -194,7 +268,10 @@ var player = {
           velocity: 16
         }
 
-        // Shoot the bullet and player.gun.reload
+        // Lose health for shooting
+        player.health.current -= player.health.decay
+
+        // Shoot the bullet and reload
         player.gun.bullets.push(bullet);
         player.gun.cooldown = player.gun.reload;
       }
@@ -212,9 +289,19 @@ var player = {
       player.gun.bullets[bullet].position.x += velocity.x;
       player.gun.bullets[bullet].position.y += velocity.y;
 
-      // Remove invisible bullets from the array
+      // Collision with enemies
+      if (opponent.enemies.length > 0) {
+        for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+          if (collision.check.rectangle(opponent.enemies[enemy], player.gun.bullets[bullet], -16 / 2)) {
+            opponent.enemies[enemy].health.current--;
+            player.gun.bullets[bullet].destroyed = true;
+          }
+        }
+      }
+
+      // Out of bounds
       if (player.gun.bullets[bullet].position.y < 0) {
-        player.gun.bullets.splice(bullet, 1);
+        player.gun.bullets[bullet].destroyed = true;
       }
     }
 
@@ -226,37 +313,56 @@ var player = {
     }
 
     // Health
-    // Decay
-    player.health.current -= player.health.decay;
+    // Regeneration
+    player.health.current += player.health.regeneration;
 
     // Clamp
     player.health.current = Maths.clamp(player.health.current, 0, player.health.maximum);
+
+    // Growth/Shrinking
+    player.radius.current = (player.health.current / player.health.maximum) * (player.radius.maximum);
+    player.width = player.radius.current;
+    player.height = player.radius.current;
+
+    // Collision Detection
+    if (opponent.enemies.length > 0) {
+      for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+        if (collision.check.rectangle(player, opponent.enemies[enemy], -player.width / 2)) {
+          player.health.current--;
+        }
+      }
+    }
+
+    // Death
+    if (player.health.current == 0 || player.health.current == player.health.maximum) {
+      game.state = game.states.over;
+    }
   },
   draw: function () {
-    // Health
-    var radius = (player.health.current / player.health.maximum) * canvas.height;
-    canvas.context.fillStyle = colours.red;
+    // NOTE: Draw method renders the furthest away object first
+    // Ship
+    canvas.context.fillStyle = player.colour;
     canvas.context.beginPath();
     canvas.context.arc(
-      player.position.x + (player.width / 2),
-      player.position.y + (player.width / 2),
-      radius,
+      player.position.x,
+      player.position.y,
+      player.radius.current,
       0,
       2 * Math.PI // Circumfrence
     );
     canvas.context.fill();
-
-    // Ship
-    canvas.context.fillStyle = colours.black;
+    // Hitbox
+    canvas.context.fillStyle = canvas.colours.white
     canvas.context.fillRect(
-      player.position.x,
-      player.position.y,
+      player.position.x - (player.width / 2),
+      player.position.y - (player.height / 2),
       player.width,
       player.height
     );
 
     // Bullets
-    for (bullet of player.gun.bullets) {
+    for (var bullet of player.gun.bullets) {
+      canvas.context.fillStyle = canvas.colours.black
       canvas.context.fillRect(
         bullet.position.x,
         bullet.position.y,
@@ -266,30 +372,128 @@ var player = {
     }
 
     // Score
+    var date = new Date(null);
+    date.setSeconds(player.score);
+    var seconds = date.toISOString().substr(11, 8);
+
+    canvas.context.fillStyle = canvas.colours.red;
     canvas.context.font = "32px 'Roboto', sans-serif";
-    canvas.context.fillText(player.score, 32, canvas.height - 36);
+    canvas.context.textAlign = "center";
+    canvas.context.fillText(seconds, (canvas.width / 2), canvas.height - 32);
+
+    // Warning
+    if (player.health.current < 25 || player.health.current > 75) {
+      canvas.context.fillText("Warning!", player.position.x, player.position.y + player.height);
+    }
   }
 };
 
-var enemies = {
+var opponent = {
+  enemies: [],
+  enemy: {
+    asteroid: function (x, y) {
+      this.destroyed = false,
+      this.position = {
+        x: x,
+        y: y
+      }
+      this.width = 64;
+      this.height = 64;
+      this.health = {
+        maximum: 8,
+        current: 8
+      };
+      this.update = function () {
+        this.position.y++;
 
-}
+        if (this.position.y >= canvas.height) {
+          this.position.y = -this.height;
+        }
 
+        if (this.health.current <= 0) {
+          this.destroyed = true;
+        }
+      }
+      this.draw = function () {
+        canvas.context.fillStyle = canvas.colours.red;
+        canvas.context.fillRect(
+          this.position.x,
+          this.position.y,
+          this.width,
+          this.height
+        );
+      }
+    },
+    wave: function (x, y) {
+      this.destroyed = false,
+      this.position = {
+        x: x,
+        y: y
+      }
+      this.width = 64;
+      this.height = 64;
+      this.speed = 4;
+      this.health = {
+        maximum: 8,
+        current: 8
+      };
+      this.update = function () {
+        this.position.x += Math.sin(game.time.elapsed);
+        this.position.y += this.speed;
+
+        // Screen wrap
+        if (this.position.y >= canvas.height) {
+          this.position.y = -this.height;
+        }
+      }
+      this.draw = function () {
+        canvas.context.fillStyle = canvas.colours.red;
+        canvas.context.fillRect(
+          this.position.x,
+          this.position.y,
+          this.width,
+          this.height
+        );
+      }
+    }
+  },
+  start: function () {
+    opponent.spawn(opponent.enemy.asteroid, Math.random()* (canvas.width - 64), 0);
+    opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width - 64), 0);
+  },
+  update: function () {
+    if (opponent.enemies.length > 0) {
+      for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+        opponent.enemies[enemy].update();
+      }
+    }
+  },
+  draw: function () {
+    if (opponent.enemies.length > 0) {
+      for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
+        opponent.enemies[enemy].draw()
+      };
+    }
+  },
+  spawn: function (enemy, x, y) {
+    var object = new enemy(x, y);
+
+    opponent.enemies.push(object);
+  }
+};
 
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
-
 // requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
-
 // MIT license
 
-(function() {
+(function () {
     var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+    var vendors = ["ms", "moz", "webkit", "o"];
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + "RequestAnimationFrame"];
+        window.cancelAnimationFrame = window[vendors[x] + "CancelAnimationFrame"]
+                                   || window[vendors[x] + "CancelRequestAnimationFrame"];
     }
 
     if (!window.requestAnimationFrame)
