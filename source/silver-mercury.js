@@ -16,11 +16,20 @@ var game = {
     elapsed: 0
   },
   start: function () {
+    // Insert canvas node
     game.node.parentNode.insertBefore(canvas.node, game.node);
     canvas.node.width = canvas.width;
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
     canvas.node.style.backgroundColor = canvas.colours.white;
+
+    // Reset variables
+    game.title = "Silver Mercury";
+    game.node = document.getElementById("silver-mercury");
+    game.state = game.states.playing;
+    game.time.elapsed = 0;
+
+    player.start();
 
     input.handle();
     opponent.start();
@@ -40,14 +49,18 @@ var game = {
 
     switch (game.state) {
       case game.states.paused:
-
+        if (input.keyboard["P"]) {
+          this.state = state.f
+        }
         break;
       case game.states.playing:
         player.update();
         opponent.update();
         break;
       case game.states.over:
-
+        if (input.keyboard[" "]) {
+          game.start();
+        }
         break;
     }
 
@@ -211,6 +224,9 @@ var player = {
   },
   score: 0,
   colour: canvas.colours.black,
+  start: function () {
+
+  },
   update: function () {
     // Score
     player.score += 1 / 60;
