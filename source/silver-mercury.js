@@ -1,11 +1,11 @@
 
 window.onload = function () {
   game.start();
+  input.handle();
 }
 
 var game = {
   title: "Silver Mercury",
-  node: document.getElementById("silver-mercury"),
   states: {
     paused: 0,
     playing: 1,
@@ -16,7 +16,8 @@ var game = {
     elapsed: 0
   },
   start: function () {
-    // Insert canvas node
+    // capture canvas node
+    canvas.node = document.getElementById("silver-mercury");
     canvas.node.width = canvas.width;
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
@@ -24,14 +25,10 @@ var game = {
 
     // Reset variables
     game.title = "Silver Mercury";
-    game.node = document.getElementById("silver-mercury");
     game.state = game.states.playing;
     game.time.elapsed = 0;
 
     player.start();
-    opponent.start();
-
-    input.handle();
     opponent.start();
 
     window.requestAnimationFrame(game.update);
@@ -108,7 +105,7 @@ var game = {
 };
 
 var canvas = {
-  node: document.createElement("canvas"),
+  node: document.getElementById("silver-mercury"),
   width: 360,
   height: 640,
   colours: {
