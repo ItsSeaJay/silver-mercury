@@ -82,7 +82,7 @@ var game = {
         canvas.context.font = "32px 'Roboto', sans-serif";
         canvas.context.textAlign = "center";
         canvas.context.fillText("Game Over", (canvas.width / 2), canvas.height / 2);
-        canvas.context.fillText("Please Refresh", (canvas.width / 2), canvas.height / 2 + 32);
+        canvas.context.fillText("Press Space", (canvas.width / 2), canvas.height / 2 + 32);
         break;
     }
 
@@ -225,7 +225,40 @@ var player = {
   score: 0,
   colour: canvas.colours.black,
   start: function () {
-
+    // Sets or resets all variables to the defaults
+    this.position = {
+      x: canvas.width / 2,
+      y: canvas.height / 2
+    };
+    this.width = 32;
+    this.height = 32;
+    this.radius = {
+      maximum: canvas.width / 3,
+      current: 0
+    };
+    this.speed = {
+      normal: 5,
+      attack: 3,
+      current: 4
+    };
+    this.velocity = {
+      x: 0,
+      y: 0
+    };
+    this.gun = {
+      bullets: [],
+      barrels: 1,
+      reload: 4,
+      cooldown: 0
+    };
+    this.health = {
+      maximum: 100,
+      current: 10,
+      decay: 1,
+      regeneration: 0.1
+    };
+    this.score = 0;
+    this.colour = canvas.colours.black;
   },
   update: function () {
     // Score
@@ -474,6 +507,8 @@ var opponent = {
     }
   },
   start: function () {
+    this.enemies = [];
+
     opponent.spawn(opponent.enemy.asteroid, Math.random()* (canvas.width - 64), 0);
     opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width - 64), 0);
   },
