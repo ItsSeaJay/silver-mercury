@@ -1,5 +1,5 @@
 
-document.body.onload = function () {
+window.onload = function () {
   game.start();
 }
 
@@ -17,7 +17,6 @@ var game = {
   },
   start: function () {
     // Insert canvas node
-    game.node.parentNode.insertBefore(canvas.node, game.node);
     canvas.node.width = canvas.width;
     canvas.node.height = canvas.height;
     canvas.node.style.border = "1px solid gray";
@@ -30,6 +29,7 @@ var game = {
     game.time.elapsed = 0;
 
     player.start();
+    opponent.start();
 
     input.handle();
     opponent.start();
@@ -50,7 +50,7 @@ var game = {
     switch (game.state) {
       case game.states.paused:
         if (input.keyboard["P"]) {
-          this.state = state.f
+          this.state = this.states.playing;
         }
         break;
       case game.states.playing:
