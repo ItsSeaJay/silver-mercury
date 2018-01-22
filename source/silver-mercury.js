@@ -1,7 +1,12 @@
 
 window.onload = function () {
   game.start();
+  
   input.handle();
+
+  window.requestAnimationFrame(game.update);
+  window.requestAnimationFrame(game.draw);
+  window.requestAnimationFrame(game.teardown);
 }
 
 var game = {
@@ -30,10 +35,6 @@ var game = {
 
     player.start();
     opponent.start();
-
-    window.requestAnimationFrame(game.update);
-    window.requestAnimationFrame(game.draw);
-    window.requestAnimationFrame(game.teardown);
   },
   update: function () {
     if (game.time.elapsed < Maths.limit) {
