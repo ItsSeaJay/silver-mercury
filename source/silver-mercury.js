@@ -56,8 +56,8 @@ var game = {
         opponent.update();
         break;
       case game.states.over:
-        if (input.keyboard["r"]) {
-          game.start;
+        if (input.keyboard[" "]) {
+          game.start();
         }
         break;
     }
@@ -80,7 +80,7 @@ var game = {
         canvas.context.font = "32px 'Roboto', sans-serif";
         canvas.context.textAlign = "center";
         canvas.context.fillText("Game Over", (canvas.width / 2), canvas.height / 2);
-        canvas.context.fillText("Press R", (canvas.width / 2), canvas.height / 2 + 32);
+        canvas.context.fillText("Press Space", (canvas.width / 2), canvas.height / 2 + 32);
         break;
     }
 
@@ -491,6 +491,11 @@ var opponent = {
         if (this.position.y >= canvas.height) {
           this.position.y = -this.height;
         }
+
+        // Death
+        if (this.health.current <= 0) {
+          this.destroyed = true;
+        }
       }
       this.draw = function () {
         canvas.context.fillStyle = canvas.colours.red;
@@ -510,6 +515,13 @@ var opponent = {
     opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width - 64), 0);
   },
   update: function () {
+    var remainder = 3;
+
+    // Spawn a new enemy every 10 seconds
+    if (Math.round(game.time.elapsed % remainder) == 0) {
+      opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width - 64), 0);
+    }
+
     if (opponent.enemies.length > 0) {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
         opponent.enemies[enemy].update();
