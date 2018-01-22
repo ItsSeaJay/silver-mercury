@@ -1,7 +1,7 @@
 
 window.onload = function () {
   game.start();
-  
+
   input.handle();
 
   window.requestAnimationFrame(game.update);
@@ -56,8 +56,8 @@ var game = {
         opponent.update();
         break;
       case game.states.over:
-        if (input.keyboard[" "]) {
-          game.start();
+        if (input.keyboard["r"]) {
+          game.start;
         }
         break;
     }
@@ -80,7 +80,7 @@ var game = {
         canvas.context.font = "32px 'Roboto', sans-serif";
         canvas.context.textAlign = "center";
         canvas.context.fillText("Game Over", (canvas.width / 2), canvas.height / 2);
-        canvas.context.fillText("Press Space", (canvas.width / 2), canvas.height / 2 + 32);
+        canvas.context.fillText("Press R", (canvas.width / 2), canvas.height / 2 + 32);
         break;
     }
 
@@ -136,7 +136,6 @@ var input = {
 
     // Key Press
     document.addEventListener("keypress", function (event) {
-
       if (event.key != "r" && event.key != "F5" && event.key != "F12") {
         event.preventDefault();
       }
