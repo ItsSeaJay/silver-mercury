@@ -450,6 +450,15 @@ var opponent = {
   sounds: {
     hit: function () {
       var sound = new Audio("audio/Hit_Hurt.wav");
+      sound.play();
+    },
+    explosion: function () {
+      var sound = new Audio("audio/Explosion.wav");
+      sound.play();
+    },
+    explosionWave: function () {
+      var sound = new Audio("audio/Explosion_Wave.wav");
+      sound.play();
     }
   },
   enemy: {
@@ -474,6 +483,8 @@ var opponent = {
 
         if (this.health.current <= 0) {
           this.destroyed = true;
+
+          opponent.sounds.explosion();
         }
       }
       this.draw = function () {
@@ -511,6 +522,7 @@ var opponent = {
         // Death
         if (this.health.current <= 0) {
           this.destroyed = true;
+          opponent.sounds.explosionWave();
         }
       }
       this.draw = function () {
