@@ -220,6 +220,12 @@ var player = {
     regeneration: 0.1
   },
   score: 0,
+  sounds: {
+    fire: function () {
+      var sound = new Audio("audio/Laser_Shoot8.wav");
+      sound.play();
+    }
+  },
   colour: canvas.colours.black,
   start: function () {
     // Sets or resets all variables to the defaults
@@ -320,6 +326,9 @@ var player = {
         // Shoot the bullet and reload
         player.gun.bullets.push(bullet);
         player.gun.cooldown = player.gun.reload;
+
+        // Make a sound
+        player.sounds.fire();
       }
     }
 
@@ -341,6 +350,7 @@ var player = {
           if (collision.check.rectangle(opponent.enemies[enemy], player.gun.bullets[bullet], -16 / 2)) {
             opponent.enemies[enemy].health.current--;
             player.gun.bullets[bullet].destroyed = true;
+            opponent.sounds.hit();
           }
         }
       }
@@ -437,6 +447,11 @@ var player = {
 var opponent = {
   spawnTimer: 0,
   enemies: [],
+  sounds: {
+    hit: function () {
+      var sound = new Audio("audio/Hit_Hurt.wav");
+    }
+  },
   enemy: {
     asteroid: function (x, y) {
       this.destroyed = false,
