@@ -467,7 +467,8 @@ var opponent = {
       this.position = {
         x: x,
         y: y
-      }
+      };
+      this.speed = Math.random() * 4 + 1;
       this.width = 64;
       this.height = 64;
       this.health = {
@@ -475,7 +476,7 @@ var opponent = {
         current: 4
       };
       this.update = function () {
-        this.position.y++;
+        this.position.y += this.speed;
 
         if (this.position.y >= canvas.height) {
           this.position.y = -this.height;
@@ -538,13 +539,10 @@ var opponent = {
   },
   start: function () {
     this.enemies = [];
-
-    opponent.spawn(opponent.enemy.asteroid, Math.random()* (canvas.width - 64), 0);
-    opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width - 64), 0);
   },
   update: function () {
     ++this.spawnTimer;
-    var framesBetweenSpawns = 60 * 2;
+    var framesBetweenSpawns = 60 * 4;
 
     if (this.spawnTimer % framesBetweenSpawns == 0) {
       if (Math.random() > 0.5) {
