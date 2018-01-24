@@ -2,6 +2,10 @@
 window.onload = function () {
   game.start();
   input.handle();
+
+  window.requestAnimationFrame(game.update);
+  window.requestAnimationFrame(game.draw);
+  window.requestAnimationFrame(game.teardown);
 }
 
 var game = {
@@ -30,10 +34,6 @@ var game = {
 
     player.start();
     opponent.start();
-
-    window.requestAnimationFrame(game.update);
-    window.requestAnimationFrame(game.draw);
-    window.requestAnimationFrame(game.teardown);
   },
   update: function () {
     if (game.time.elapsed < Maths.limit) {
@@ -435,6 +435,7 @@ var player = {
 };
 
 var opponent = {
+  spawnTimer: 0,
   enemies: [],
   enemy: {
     asteroid: function (x, y) {
@@ -446,8 +447,8 @@ var opponent = {
       this.width = 64;
       this.height = 64;
       this.health = {
-        maximum: 8,
-        current: 8
+        maximum: 4,
+        current: 4
       };
       this.update = function () {
         this.position.y++;
@@ -480,8 +481,8 @@ var opponent = {
       this.height = 64;
       this.speed = 4;
       this.health = {
-        maximum: 8,
-        current: 8
+        maximum: 2,
+        current: 2
       };
       this.update = function () {
         this.position.x += Math.sin(game.time.elapsed);
@@ -490,6 +491,10 @@ var opponent = {
         // Screen wrap
         if (this.position.y >= canvas.height) {
           this.position.y = -this.height;
+        }
+
+        if (this.health.current <= 0) {
+          this.destroyed = true;
         }
       }
       this.draw = function () {
@@ -510,6 +515,25 @@ var opponent = {
     opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width - 64), 0);
   },
   update: function () {
+    ++this.spawnTimer;
+    var framesBetweenSpawns = 60 * 2;
+
+    if (this.spawnTimer % framesBetweenSpawns == 0) {
+      if (Math.random() > 0.5) {
+        opponent.spawn(
+          opponent.enemy.asteroid,
+          Math.random() * (canvas.width - 64),
+          -64
+        );
+      } else {
+        opponent.spawn(
+          opponent.enemy.wave,
+          Math.random() * (canvas.width - 64),
+          -64
+        );
+      }
+    }
+
     if (opponent.enemies.length > 0) {
       for (var enemy = opponent.enemies.length - 1; enemy >= 0; enemy--) {
         opponent.enemies[enemy].update();
