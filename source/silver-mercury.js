@@ -435,6 +435,7 @@ var player = {
 };
 
 var opponent = {
+  spawnTimer: 0,
   enemies: [],
   enemy: {
     asteroid: function (x, y) {
@@ -446,8 +447,8 @@ var opponent = {
       this.width = 64;
       this.height = 64;
       this.health = {
-        maximum: 8,
-        current: 8
+        maximum: 4,
+        current: 4
       };
       this.update = function () {
         this.position.y++;
@@ -480,8 +481,8 @@ var opponent = {
       this.height = 64;
       this.speed = 4;
       this.health = {
-        maximum: 8,
-        current: 8
+        maximum: 2,
+        current: 2
       };
       this.update = function () {
         this.position.x += Math.sin(game.time.elapsed);
@@ -515,11 +516,23 @@ var opponent = {
     opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width - 64), 0);
   },
   update: function () {
-    var remainder = 3;
+    ++this.spawnTimer;
+    var framesBetweenSpawns = 60 * 2;
 
-    // Spawn a new enemy every 10 seconds
-    if (Math.round(game.time.elapsed % remainder) == 0) {
-      opponent.spawn(opponent.enemy.wave, Math.random() * (canvas.width - 64), 0);
+    if (this.spawnTimer % framesBetweenSpawns == 0) {
+      if (Math.random() > 0.5) {
+        opponent.spawn(
+          opponent.enemy.asteroid,
+          Math.random() * (canvas.width - 64),
+          -64
+        );
+      } else {
+        opponent.spawn(
+          opponent.enemy.wave,
+          Math.random() * (canvas.width - 64),
+          -64
+        );
+      }
     }
 
     if (opponent.enemies.length > 0) {
